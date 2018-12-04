@@ -15,7 +15,7 @@ Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing y
 - Import UniRx from [AssetStore](https://assetstore.unity.com/packages/tools/integration/unirx-reactive-extensions-for-unity-17276)
 - Import Red
 
-> Note:
+> Note:  
 > Sometimes the solution is not updated to latest C# 7  
 > Close your IDE and delete all .csproj and .sln in main folder  
 > It will be recreated with the correct version  
