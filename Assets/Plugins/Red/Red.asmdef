@@ -1,0 +1,11 @@
+{
+    "name": "Red",
+    "references": [
+        "UniRx",
+        "UniRx.Async"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
