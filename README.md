@@ -17,7 +17,7 @@ Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing y
 
 > Note:  
 > Sometimes the solution is not updated to latest C# 7  
-> Close your IDE and delete all .csproj and .sln in main folder  
+> Close your IDE and delete all .csproj and .sln from main folder  
 > It will be recreated with the correct version  
 
 
