@@ -8,7 +8,11 @@ Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing y
 - **Containers** solve local and global dependencies and make it possible to abandon static classes, singletons.  
 - **Contracts** make it easy to build MVP for UI and further interaction with business logic.  
 
-# Introduction
+## Introduction
 
 First of all, you should be well versed in Rx and specifically in [UniRx](https://github.com/neuecc/UniRx).  
 Learn this in detail if you still do not know it.  
+
+## License
+
+MIT License.
