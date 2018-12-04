@@ -16,7 +16,7 @@ Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing y
 - Import Red
 
 > Note:  
-> Sometimes the solution is not updated to latest C# 7  
+> Sometimes the solution is not updated to latest C#
 > Close your IDE and delete all .csproj and .sln from main folder  
 > It will be recreated with the correct version  
 
