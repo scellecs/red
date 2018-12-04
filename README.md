@@ -15,4 +15,4 @@ Learn this in detail if you still do not know it.
 
 ## License
 
-MIT License.
+Red is licensed under [MIT License](Red/LICENSE.txt).
