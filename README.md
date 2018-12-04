@@ -3,7 +3,7 @@
 
 Toolchain based on Reactive Extensions.
   
-Extends the capabilities of `UniRx`, allowing you to conveniently resolve dependencies and implement loose coupling between components or modules of your architecture.  
+Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing you to conveniently resolve dependencies and implement loose coupling between components or modules of your architecture.  
 
 - **Containers** solve local and global dependencies and make it possible to abandon static classes, singletons.  
 - **Contracts** make it easy to build MVP for UI and further interaction with business logic.  
