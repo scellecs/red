@@ -7,3 +7,8 @@ Extends the capabilities of UniRx, allowing you to conveniently resolve dependen
 
 Contracts make it easy to build MVP for the UI and further interaction with business logic.  
 Containers solve local and global dependencies and make it possible to abandon static classes, singletons.  
+
+# Introduction
+
+First of all, you should be well versed in Rx and specifically in [UniRx] (https://github.com/neuecc/UniRx).  
+Learn this in detail if you still do not know it.  
