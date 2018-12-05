@@ -3,8 +3,7 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-using DG.Tweening;
-using Red;
+using System.Collections;
 using UniRx;
 using UnityEngine;
 
@@ -41,30 +40,32 @@ namespace Red.Example.UI {
             });
         }
 
-        public async void Open(bool force) {
+        /// <summary>
+        /// Perform open animation and global window state changes
+        /// </summary>
+        /// <param name="force">Skip animation, jump through states</param>
+        public void Open(bool force) {
             if (_contents.gameObject.activeSelf == false)
                 _contents.gameObject.SetActive(true);
             
             _canvas.State.Value = CanvasStage.Opening;
 
             if (force) {
-                _contents.anchoredPosition3D = _initialPosition;
+                _contents.anchoredPosition = _initialPosition;
                 _canvasGroup.alpha = 1;
                 _canvas.State.Value = CanvasStage.Opened;
                 return;
             }
 
-            _contents.anchoredPosition = _initialPosition + ShowPositionStart;
             _canvasGroup.alpha = 0;
- 
-            _contents.DOKill();
-            _contents.DOAnchorPos3D(_initialPosition, 0.2f)
-                .SetEase(Ease.OutSine)
-                .OnComplete(() => _canvas.State.Value = CanvasStage.Opened);
             
-            _canvasGroup.DOFade(1f, 0.2f);
+            Observable.FromCoroutine(AnimateOpen).Subscribe(_ => _canvas.State.Value = CanvasStage.Opened);
         }
 
+        /// <summary>
+        /// Perform close animation and global window state changes
+        /// </summary>
+        /// <param name="force">Skip animation, jump through states</param>
         public void Close(bool force) {
             if (force == false && _canvas.State.Value == CanvasStage.Closed) return;
 
@@ -76,12 +77,39 @@ namespace Red.Example.UI {
                 return;
             }
 
-            _contents.DOKill();
-            _contents.DOAnchorPos3D(_initialPosition + HidePositionEnd, 0.2f)
-                .SetEase(Ease.InSine)
-                .OnComplete(() => _canvas.State.Value = CanvasStage.Closed);
-
-            _canvasGroup.DOFade(0f, 0.2f);
+            Observable.FromCoroutine(AnimateClose).Subscribe(_ => _canvas.State.Value = CanvasStage.Closed);
         }
+
+        private IEnumerator AnimateOpen() {
+            const float timer = 0.2f;
+
+            var time = 0f;
+            var positionFrom = _initialPosition + ShowPositionStart;
+            var positionTo = _initialPosition;
+            
+            do {
+                yield return null;                                
+                time += Time.deltaTime;
+                var t = Mathf.Clamp01(time / timer);
+                _contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
+                _canvasGroup.alpha = t;
+            } while (time < timer);
+        }        
+        
+        private IEnumerator AnimateClose() {
+            const float timer = 0.2f;
+
+            var time = 0f;
+            var positionFrom = _initialPosition;
+            var positionTo = _initialPosition + HidePositionEnd;
+            
+            do {
+                yield return null;                                
+                time += Time.deltaTime;
+                var t = Mathf.Clamp01(time / timer);
+                _contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
+                _canvasGroup.alpha = 1f - t;
+            } while (time < timer);
+        }  
     }
 }
