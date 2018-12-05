@@ -9,8 +9,8 @@ using UnityEngine;
 
 namespace Red.Example.UI {
     public class CanvasAnimator : MonoBehaviour {
-        private static readonly Vector3 ShowPositionStart = new Vector3(0, 60, 0);
-        private static readonly Vector3 HidePositionEnd = new Vector3(0, -60, 0);
+        private static readonly Vector2 ShowPositionStart = new Vector3(0, 60);
+        private static readonly Vector2 HidePositionEnd = new Vector3(0, -60);
 
         [SerializeField] private CanvasGroup _canvasGroup;        
         [SerializeField] private RectTransform _contents;
