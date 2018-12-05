@@ -19,11 +19,11 @@ namespace Red.Example.UI {
         
         private CUIManager _managerContract;
         private CUICanvas _canvas;
-        private Vector3 _initialPosition;
+        private Vector2 _initialPosition;
 
         private void Awake() {
             _canvas = this.GetOrCreate<CUICanvas>();
-            _initialPosition = _contents.anchoredPosition3D;
+            _initialPosition = _contents.anchoredPosition;
 
             Bind();
 
@@ -81,7 +81,7 @@ namespace Red.Example.UI {
         }
 
         private IEnumerator AnimateOpen() {
-            const float timer = 0.2f;
+            const float duration = 0.2f;
 
             var time = 0f;
             var positionFrom = _initialPosition + ShowPositionStart;
@@ -90,14 +90,14 @@ namespace Red.Example.UI {
             do {
                 yield return null;                                
                 time += Time.deltaTime;
-                var t = Mathf.Clamp01(time / timer);
+                var t = Mathf.Clamp01(time / duration);
                 _contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
                 _canvasGroup.alpha = t;
-            } while (time < timer);
+            } while (time < duration);
         }        
         
         private IEnumerator AnimateClose() {
-            const float timer = 0.2f;
+            const float duration = 0.2f;
 
             var time = 0f;
             var positionFrom = _initialPosition;
@@ -106,10 +106,10 @@ namespace Red.Example.UI {
             do {
                 yield return null;                                
                 time += Time.deltaTime;
-                var t = Mathf.Clamp01(time / timer);
+                var t = Mathf.Clamp01(time / duration);
                 _contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
                 _canvasGroup.alpha = 1f - t;
-            } while (time < timer);
+            } while (time < duration);
         }  
     }
 }
