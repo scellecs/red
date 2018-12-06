@@ -20,7 +20,7 @@ namespace Red {
 
         public override void Dispose() {
             base.Dispose();
-            initialized.Dispose();
+            this.initialized.Dispose();
         }
     }
 }
