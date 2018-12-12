@@ -3,7 +3,7 @@ namespace Red {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using JetBrains.Annotations;
+    using UniRx;
     using UnityEngine;
 
     /// <summary>
@@ -16,7 +16,7 @@ namespace Red {
         public object Target { get; protected set; }
 
         /// <summary>
-        /// Unique indentifier for getting different instances from single target
+        /// Unique identifier for getting different instances from single target
         /// </summary>
         public string Identifier { get; protected set; }
 
@@ -91,7 +91,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T0 GetOrCreate(Component component, string identifier = "") {
             if (component == null) throw new ArgumentNullException(nameof(component));
             return GetOrCreate(component.gameObject, identifier);
@@ -102,7 +102,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T0 GetOrCreate(GameObject gameObject, string identifier = "") {
             if (gameObject == null) throw new ArgumentNullException(nameof(gameObject));
             return GetOrCreate((object) gameObject, identifier);
@@ -113,7 +113,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="obj">Usual type or null</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T0 GetOrCreate(object obj, string identifier = "") {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
 
@@ -135,7 +135,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T0 TryGet(Component component, string identifier = "") {
             if (component == null) throw new ArgumentNullException(nameof(component));
             return TryGet(component.gameObject, identifier);
@@ -146,7 +146,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T0 TryGet(GameObject gameObject, string identifier = "") {
             if (gameObject == null) throw new ArgumentNullException(nameof(gameObject));
             return TryGet((object) gameObject, identifier);
@@ -157,7 +157,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="obj">Usual type or null</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T0 TryGet(object obj, string identifier = "") {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
             return Contracts.FirstOrDefault(c => c.Target == obj && c.Identifier == identifier);

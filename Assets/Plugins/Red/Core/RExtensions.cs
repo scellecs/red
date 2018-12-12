@@ -12,7 +12,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T TryGet<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(component, identifier);
         }
@@ -22,7 +22,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T TryGet<T>(this GameObject gameObject, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(gameObject, identifier);
         }
@@ -32,7 +32,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T GetOrCreate<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.GetOrCreate(component, identifier);
         }
@@ -43,7 +43,7 @@ namespace Red {
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
-        /// <param name="identifier">Unique identifer for contract</param>
+        /// <param name="identifier">Unique identifier for contract</param>
         public static T GetOrCreate<T>(this GameObject gameObject, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.GetOrCreate(gameObject, identifier);
         }
