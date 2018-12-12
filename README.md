@@ -11,7 +11,7 @@ Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing y
 ## How to install
 
 - Go to [Releases](https://github.com/X-Crew/Red/releases) and download latest package.
-- If your Unity version is lower than 2018.3, open your Player Settings in Unity project and change Scripting Runtime Version to `.Net 4.x Equivalent`.
+- If your Unity version is lower than 2018.3, open Player Settings in Unity project and change Scripting Runtime Version to `.Net 4.x Equivalent`.
 - Import UniRx from [AssetStore](https://assetstore.unity.com/packages/tools/integration/unirx-reactive-extensions-for-unity-17276).
 - Import Red.
 
