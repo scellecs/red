@@ -1,4 +1,6 @@
-﻿namespace Red.Example {
+﻿using Red.Example.UI;
+
+namespace Red.Example {
 	
 	/// <summary>
 	/// Вариация ServiceLocator, его можно сделать нестатичным, да и вообще иметь сколько угодно контейнеров
@@ -6,7 +8,7 @@
 	/// </summary>
 	public static class App {
 		public static RContainer Common = new RContainer();
-		public static RContainer UI = new RContainer();
+		public static RContainerUI UI = new RContainerUI();
 		public static RContainer Player = new RContainer();
 	}
 }

@@ -24,7 +24,7 @@ namespace Red.Example.UI {
         [Output]
         public readonly IntReactiveProperty WindowsStackSize = new IntReactiveProperty(0);
 
-        public async UniTask<T> GetWindow<T>() where T : WindowContract<T>, new() {
+        public async UniTask<T> ResolveWindow<T>() where T : RContract<T>, IWindow<T>, new() {
             var go = await RequestWindowOperation.Execute(typeof(T));
             var contract = go.GetOrCreate<T>();
 
@@ -55,7 +55,7 @@ namespace Red.Example.UI {
 
         private void Awake() {
             _contract = this.GetOrCreate<CUIManager>();       
-            App.UI.Register(_contract);
+            App.UI.RegisterManager(_contract);
         }        
         
         private void Start() {
@@ -84,8 +84,8 @@ namespace Red.Example.UI {
             _contract.RequestWindowOperation.Subscribe(context => {
                 var type = context.Parameter;
                 var win = GetOrInstantiateCanvas(type);
-                context.Operation.OnNext(win);
-                context.Operation.OnCompleted();
+                context.OnNext(win);
+                context.OnCompleted();
             });
             _closableWindowsStack.ObserveCountChanged().Subscribe(newCount => _contract.WindowsStackSize.Value = newCount);
         }

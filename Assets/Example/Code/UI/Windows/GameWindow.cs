@@ -7,6 +7,7 @@ using System;
 using Red.Example.UI;
 using Red.Example.UI.Windows.Popups;
 using UniRx;
+using UniRx.Async;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,7 +15,7 @@ namespace Red.Example.UI {
     // Contract
     // Model
     // Interface
-    public class CGameWindow : WindowContract<CGameWindow> {
+    public class CGameWindow : WindowContract<CGameWindow, int, Unit> {
 
         // Local window interface, abstraction from external interfaces
         // Local view is binded to local model        
@@ -24,9 +25,9 @@ namespace Red.Example.UI {
         [Internal] public ReactiveCommand JumpButtonCommand;
         
         // All "external model composition" logic
-        protected override async void InitializeWindow() {
+        protected override async UniTask InitializeWindow() {
             var player = await App.Player.ResolveAsync<CPlayer>();
-            var uiManager = await App.UI.ResolveAsync<CUIManager>();
+            var uiManager = await App.UI.ResolveManager();
             this.Health = player.HP;
 
             this.WindowButtonCommand = uiManager.WindowsStackSize
@@ -54,15 +55,15 @@ namespace Red.Example.UI {
         [SerializeField] private Button jumpButton;
         
         private CGameWindow contract;
-        private CUIManager ui;
 
-        private async void Awake() {
-            // Waiting in advance, before creating model
-            // Otherwise there is a chance to bind to null properties
-            await App.Player.ResolveAsync<CPlayer>();
-            this.ui = await App.UI.ResolveAsync<CUIManager>();
-            
+        private async void Awake() {            
             this.contract = this.GetOrCreate<CGameWindow>();
+            
+            // Waiting in advance, before creating bindings
+            // Otherwise there is a chance to bind to null properties
+            await this.contract;
+            
+            // Contract is fully initialized, can perform binding
             Bind();
         }
 
@@ -83,17 +84,18 @@ namespace Red.Example.UI {
         }
 
         private async void OpenWindow1() {
-            var window = await this.ui.GetWindow<CDummyWindow1>();
+            var window = await App.UI.ResolveWindow<CDummyWindow1>();
             window.Open();
         }
 
         private async void OpenCommonPopup() {
             // Async popup resolve
-            var popup = await this.ui.GetWindow<CCommonPopup>();
+            var popup = await App.UI.ResolveWindow<CCommonPopup>();
 
-            var randomText = "Text " + UnityEngine.Random.Range(0, int.MaxValue);            
+            var randomText = "Text " + UnityEngine.Random.Range(0, int.MaxValue); 
+            
             // Calling Observable creation, waiting for the first result
-            var result = await popup.OpenAndResultAsync<CommonPopupResult>(randomText, ObservePopupStage.Closing);
+            var result = await popup.OpenAndResultAsync(randomText, ObserveWindowStage.Closing);
             
             // Do something depends on result
             switch (result) {

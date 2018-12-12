@@ -10,65 +10,7 @@ using UnityEngine.UI;
 
 namespace Red.Example.UI.Windows.Popups {
 
-    public class CCommonPopup : WindowContract<CCommonPopup> {
-        public IReactiveCommand<string> OpenWithParamsCommand = new ReactiveCommand<string>();
-
-        protected override void InitializeWindow() {
-            // We don't want command to be executable while this window is not fully closed
-            this.OpenWithParamsCommand = new ReactiveCommand<string>(canExecuteSource: this.IsClosed);
-            
-            // Let's proxy parametrized open command to generic open command and then to CUICanvas 
-            this.OpenWithParamsCommand.Subscribe(_ => this.OpenCommand.Execute());
-        }
-
-        /// <summary>
-        /// Simple sync open method
-        /// </summary>
-        /// <param name="text">Example parameter</param>
-        public bool Open(string text) {
-            return this.OpenWithParamsCommand.Execute(text);
-        }
-        
-        /// <summary>
-        /// Advanced async method with async result on desired closing stage
-        /// </summary>
-        /// <param name="text">Example parameter</param>
-        /// <param name="stage">Window closing stage, when observable is completed</param>
-        /// <typeparam name="TEnum"></typeparam>
-        /// <returns></returns>
-        public IObservable<TEnum> OpenAndResultAsync<TEnum>(string text, ObservePopupStage stage)
-            where TEnum : struct, IConvertible {
-            if (typeof(TEnum).IsEnum == false) {
-                throw new ArgumentException("T must be an enumerated type");
-            }
-
-            return Observable.Create<TEnum>(o => {
-                this.OpenWithParamsCommand.Execute(text);
-                switch (stage) {
-                    case ObservePopupStage.Closed:
-                        return this.OnClosed
-                            .Select(intResult => (TEnum)Enum.ToObject(typeof(TEnum), intResult))
-                            .Subscribe(res => {
-                                o.OnNext(res);
-                                o.OnCompleted();
-                            });
-                    case ObservePopupStage.Closing:
-                        return this.OnClosing
-                            .Select(intResult => (TEnum)Enum.ToObject(typeof(TEnum), intResult))
-                            .Subscribe(res => {
-                                o.OnNext(res);
-                                o.OnCompleted();
-                            });
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(stage), stage, null);
-                }
-            });
-        }
-
-        public bool Close(CommonPopupResult result) {
-            return this.CloseCommand.Execute((int)result);
-        }
-    }
+    public class CCommonPopup : WindowContract<CCommonPopup, string, CommonPopupResult> {}
 
     public class CommonPopup : MonoBehaviour, UIPresenter {
         public Type ContractType => typeof(CCommonPopup);
@@ -90,7 +32,7 @@ namespace Red.Example.UI.Windows.Popups {
         private void Bind() {
             this.contract = this.GetOrCreate<CCommonPopup>();
             this.canvas = this.GetOrCreate<CUICanvas>();
-            this.contract.OpenWithParamsCommand.Subscribe(Setup);
+            this.contract.OpenCommand.Subscribe(Setup);
 
             var selector = canvas.State.Select(s => s == CanvasStage.Opened);
             var okCommand = selector.ToReactiveCommand();
@@ -120,7 +62,7 @@ namespace Red.Example.UI.Windows.Popups {
         /// </summary>
         /// <param name="result">Result to push in underlying contract Result property</param>
         public void Close(int result) {
-            this.contract.Close(result);
+            this.contract.Close((CommonPopupResult)result);
         }
     }
 }

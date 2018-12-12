@@ -3,8 +3,8 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-namespace Red.Example.UI.Windows.Popups {
-    public enum ObservePopupStage {
+namespace Red.Example.UI {
+    public enum ObserveWindowStage {
         Closing,
         Closed
     }

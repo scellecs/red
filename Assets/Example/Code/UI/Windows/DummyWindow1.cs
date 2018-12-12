@@ -5,11 +5,11 @@
 
 using System;
 using Red.Example.UI;
+using UniRx;
 using UnityEngine;
 
 namespace Red.Example.UI {
-    public class CDummyWindow1 : WindowContract<CDummyWindow1> {
-        protected override void InitializeWindow() { }
+    public class CDummyWindow1 : WindowContract<CDummyWindow1, int, Unit> {
     }
     
     public class DummyWindow1 : MonoBehaviour, UIPresenter {
