@@ -119,8 +119,12 @@ namespace UniRx {
     using System.Collections.Generic;
     using System.Threading;
 
-    public interface IReactiveOperation<T, TR> : IObservable<OperationContext<T, TR>> {
+    public interface IReactiveOperation<T, TR> : IObservable<IOperationContext<T, TR>> {
         IObservable<TR> Execute(T parameter);
+    }
+    
+    public interface IOperationContext<out T, in TR> : IObserver<TR> {
+        T Parameter { get; }
     }
 
     /// <summary>
@@ -128,7 +132,7 @@ namespace UniRx {
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TR"></typeparam>
-    public class OperationContext<T, TR> : IObservable<TR>, IObserver<TR> {
+    public class OperationContext<T, TR> : IOperationContext<T, TR>, IObservable<TR> {
         public T Parameter { get; }
         
         private readonly Subject<TR> subject;
@@ -211,7 +215,7 @@ namespace UniRx {
             return operation;
         }
 
-        public IDisposable Subscribe(IObserver<OperationContext<T, TR>> observer) {
+        public IDisposable Subscribe(IObserver<IOperationContext<T, TR>> observer) {
             return this.trigger.Subscribe(observer);
         }
 
