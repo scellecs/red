@@ -10,6 +10,11 @@ namespace Red {
     /// Base non-generic type for contracts
     /// </summary>
     public abstract class RContract : IDisposable {
+#if UNITY_EDITOR
+        internal static ReactiveDictionary<object, ReactiveCollection<RContract>> AllContracts 
+            = new ReactiveDictionary<object, ReactiveCollection<RContract>>();
+#endif
+
         /// <summary>
         /// Reference for object with which the contract is associated
         /// </summary>
@@ -19,6 +24,17 @@ namespace Red {
         /// Unique identifier for getting different instances from single target
         /// </summary>
         public string Identifier { get; protected set; }
+
+        protected void PreInitialize() {
+#if UNITY_EDITOR
+            if (AllContracts.TryGetValue(this.Target, out var list)) {
+                list.Add(this);
+            }
+            else {
+                AllContracts.Add(this.Target, new ReactiveCollection<RContract> {this});
+            }
+#endif
+        }
 
         /// <summary>
         /// Default place for getting sub-contracts or create complex <see cref="IObservable{T}"/>
@@ -82,6 +98,7 @@ namespace Red {
         /// <param name="target"></param>
         public RContract(object target) {
             this.Target = target;
+            this.PreInitialize();
             this.Initialize();
             Contracts.Add((T0) this);
         }
@@ -120,9 +137,10 @@ namespace Red {
             var contract = TryGet(obj, identifier);
             if (contract == null) {
                 contract = new T0 {
-                    Target = obj,
+                    Target     = obj,
                     Identifier = identifier
                 };
+                contract.PreInitialize();
                 contract.Initialize();
                 Contracts.Add(contract);
             }
