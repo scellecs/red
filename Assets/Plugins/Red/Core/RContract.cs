@@ -27,11 +27,13 @@ namespace Red {
 
         protected void PreInitialize() {
 #if UNITY_EDITOR
-            if (AllContracts.TryGetValue(this.Target, out var list)) {
-                list.Add(this);
-            }
-            else {
-                AllContracts.Add(this.Target, new ReactiveCollection<RContract> {this});
+            if (this.Target != null) {
+                if (AllContracts.TryGetValue(this.Target, out var list)) {
+                    list.Add(this);
+                }
+                else {
+                    AllContracts.Add(this.Target, new ReactiveCollection<RContract> {this});
+                }
             }
 #endif
         }
