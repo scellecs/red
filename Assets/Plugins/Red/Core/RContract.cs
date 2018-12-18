@@ -175,7 +175,7 @@ namespace Red {
             return Contracts.FirstOrDefault(c => c.Target == obj && c.Identifier == identifier);
         }
 
-        protected T1 GetSub<T1>(string identifier = "") where T1 : RContract<T1>, new() {
+        protected T1 GetOrCreate<T1>(string identifier = "") where T1 : RContract<T1>, new() {
             var local = RContract<T1>.GetOrCreate(this.Target, identifier);
             return local;
         }
