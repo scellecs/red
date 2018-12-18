@@ -3,8 +3,8 @@
 namespace Red.Example {
 	
 	/// <summary>
-	/// Вариация ServiceLocator, его можно сделать нестатичным, да и вообще иметь сколько угодно контейнеров
-	/// Но под это нужно строить архитектуру, где контейнер\контейнеры будут спускаться сверху вниз
+	/// Variation of ServiceLocator, it can be made non-static, and in general have any number of containers
+    /// But under this you need to build an architecture where the container\containers will go down from the top.
 	/// </summary>
 	public static class App {
 		public static RContainer Common = new RContainer();

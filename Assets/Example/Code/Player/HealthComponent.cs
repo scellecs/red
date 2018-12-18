@@ -7,12 +7,12 @@
         private CPlayer contract;
         
         private void OnEnable() {
-            //Получение контракта с этого объета, если он существует уже; или создание нового инстанса
-            //Несколько компонентов могут попытаться получить контракт и в итоге будет ссылаться на один и тот же
-            //Для примера DummyComponent получит тот же контракт
-            //Исключение это добавление стрингового индетификатора this.GetOrCreate<CPlayer>("someString")
-            //Это позволяет привязать к ГО несколько контрактов одинакового типа
-            //В большинстве случаев это не нужно
+            //Getting a contract from this object, if it already exists; or creating a new instance
+            //Several components may try to get a contract and will eventually refer to the same
+            //For example, DummyComponent will get the same contract.
+            //The exception is the addition of the string identifier this.GetOrCreate<CPlayer>("someString")
+            //This allows you to bind several contracts of the same type to the GO.
+            //In most cases it is not necessary.
             this.contract = this.GetOrCreate<CPlayer>();
 
             this.contract.HP.Subscribe(hp => Debug.Log(hp)).AddTo(this.disposable);

@@ -3,8 +3,8 @@
     using UnityEngine;
 
     /// <summary>
-    /// Тут примеры что используется в контрактах в основном
-    /// Можно помещать любые обсерваблы, но мы часто обходимся комбинацией готовых реактивных объектов
+    /// Here are examples of what is used in contracts mainly.
+    /// You can put any observables, but we often get by with a combination of ready-made reactive objects.
     /// </summary>
     public class CBotManager : RContract<CBotManager> {
         public ReactiveCommand SomeLogic { get; } = new ReactiveCommand();
@@ -15,8 +15,7 @@
         public ReactiveProperty<int> SomeProperty { get; } = new ReactiveProperty<int>();
         public ReactiveCollection<int> SomeCollection { get; } = new ReactiveCollection<int>();
         
-        //Это типа аналог Func<int, int> только реактивный, то есть ты можешь дожидаться возвращаемого значения
-        //Самописный, потому уточняю
+        //This is an analogue of Func <int, int>, but reactive, that is, you can wait for the return value.
         public ReactiveOperation<int, int> SomeOperation { get; } = new ReactiveOperation<int, int>();
     }
 
@@ -29,11 +28,11 @@
 
             this.contract.SomeLogic.Subscribe().AddTo(this.disposable);
             
-            //Регистрация в статическом контейнере ссылок
-            this.contract.RegisterIn(App.Common);
-            
-            //Есть альтернативная запись
-            //App.Common.Register(this.contract);
+            //Registration in a static container
+            App.Common.Register(this.contract);
+
+            //There is an alternative
+            //this.contract.RegisterIn(App.Common);
         }
 
         private void OnDisable() {

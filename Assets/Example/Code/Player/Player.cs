@@ -9,15 +9,12 @@ namespace Red.Example {
 
 		private void OnEnable() {
 			this.contract = this.GetOrCreate<CPlayer>();
-			App.Player.Register(contract);
 
-			Bind();
-		}
-
-		private void Bind() {
 			this.contract.JumpCommand
 				.Subscribe(_ => Debug.LogWarning("Well, let's say I jumped"))
 				.AddTo(this.dispose);
+			
+			this.contract.RegisterIn(App.Player);
 		}
 
 		private void OnDisable() {

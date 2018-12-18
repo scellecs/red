@@ -3,18 +3,18 @@
 	using UniRx;
 	using UnityEngine;
 
-	//Условно здесь идет какая-то полезная работа с ботМенеджером, которую мне лень писать :)
+	//Conventionally, there is some kind of useful work with the bot manager, which I am too lazy to write :)
 	public class BotFinderComponent : MonoBehaviour {
 		
 		private async void OnEnable() {
-			//Вот так асинхронно мы можем резолвить зависимости у контейнера
-			//Помогает не париться над очередностью вызова методов инициализации
+			//Here so asynchronously we can resolve dependences at the container
+			//Helps not focus on the order of initialization methods
 			var botManager = await App.Common.ResolveAsync<CBotManager>();			
 			
-			//Можно конечно резолвить напрямую и если нет контракта в контейнере, то получать нуль
+			//You can of course resolve directly and if there is no contract in the container, then you get null
 			botManager = App.Common.Resolve<CBotManager>();
 			
-			//Если что, то это обсервабл и можно повесить таймаут например :)
+			//If anything, then this is observable and you can add a timeout for example
 			botManager = await App.Common.ResolveAsync<CBotManager>().Timeout(TimeSpan.FromSeconds(10));
 
 

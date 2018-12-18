@@ -25,7 +25,7 @@ namespace Red.Example.UI {
         public readonly IntReactiveProperty WindowsStackSize = new IntReactiveProperty(0);
 
         public async UniTask<T> ResolveWindow<T>() where T : RContract<T>, IWindow<T>, new() {
-            var go = await RequestWindowOperation.Execute(typeof(T));
+            var go = await this.RequestWindowOperation.Execute(typeof(T));
             var contract = go.GetOrCreate<T>();
 
             return contract;
