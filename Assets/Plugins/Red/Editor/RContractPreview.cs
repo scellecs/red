@@ -72,8 +72,9 @@ namespace Red.Editor {
             this.disposables.Clear();
         }
 
+        private readonly GUIContent title = new GUIContent("Red Contracts");
         public override GUIContent GetPreviewTitle() {
-            return new GUIContent("Red Contracts");
+            return this.title;
         }
 
         public override bool HasPreviewGUI() {
@@ -131,6 +132,7 @@ namespace Red.Editor {
         }
     }
 
+    //TODO rework to Subject<T> ???
     public class ObserverProvider {
         public ReactiveProperty<object>    Value    { get; } = new ReactiveProperty<object>();
         public ReactiveProperty<Exception> Error    { get; } = new ReactiveProperty<Exception>();
