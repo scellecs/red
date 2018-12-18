@@ -1,6 +1,5 @@
-﻿using Red.Example.UI;
-
-namespace Red.Example {
+﻿namespace Red.Example {
+	using UI;
 	
 	/// <summary>
 	/// Variation of ServiceLocator, it can be made non-static, and in general have any number of containers
