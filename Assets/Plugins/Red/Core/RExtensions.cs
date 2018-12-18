@@ -102,12 +102,12 @@ namespace Red {
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static T AddTo<T>(this T disposable, RContract contract) where T : IDisposable {
-            if (!(contract?.Target is GameObject)) {
-                disposable.Dispose();
+            if (contract?.Target is GameObject o) {
+                disposable.AddTo(o);
                 return disposable;
             }
-
-            disposable.AddTo((GameObject) contract.Target);
+            
+            disposable.Dispose();
             return disposable;
         }
     }
