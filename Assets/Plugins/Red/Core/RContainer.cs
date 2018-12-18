@@ -19,18 +19,13 @@ namespace Red {
         /// <returns>Return <see cref="IDisposable"/> for unscribing</returns>
         public IDisposable Register(RContract contract) {
             if (contract == null) throw new ArgumentNullException(nameof(contract));
-            return this.Register(contract, contract.GetType());
-        }
-
-        private IDisposable Register(RContract contract, Type type) {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-
-            var container = new CompositeDisposable();
-            this.RegisterLocal(contract, type).AddTo(container);
-            return container;
+            
+            return this.RegisterLocal(contract, contract.GetType());
         }
 
         private IDisposable RegisterLocal(RContract contract, Type type) {
+            if (type == null) throw new ArgumentNullException(nameof(type));
+            
             if (!this.contracts.ContainsKey(type) && !this.contracts.ContainsValue(contract)) {
                 this.contracts.Add(type, contract);
                 this.newContract.OnNext(contract);
@@ -52,8 +47,7 @@ namespace Red {
         /// <typeparam name="T">Type of contract</typeparam>
         /// <returns>Instance of <typeparamref name="T"/> or null</returns>
         public T Resolve<T>() where T : RContract {
-            RContract contract;
-            if (this.contracts.TryGetValue(typeof(T), out contract)) {
+            if (this.contracts.TryGetValue(typeof(T), out var contract)) {
                 return (T) contract;
             }
 
@@ -67,8 +61,7 @@ namespace Red {
         /// <typeparam name="T">Type of contract</typeparam>
         public IObservable<T> ResolveAsync<T>() where T : RContract {
             return Observable.Create<T>(o => {
-                RContract contract;
-                if (this.contracts.TryGetValue(typeof(T), out contract)) {
+                if (this.contracts.TryGetValue(typeof(T), out var contract)) {
                     o.OnNext((T) contract);
                     o.OnCompleted();
                     return Disposable.Empty;
@@ -90,8 +83,7 @@ namespace Red {
         /// <typeparam name="T">Type of contract</typeparam>
         public IObservable<T> ResolveStream<T>() where T : RContract {
             return Observable.Create<T>(o => {
-                RContract contract;
-                if (this.contracts.TryGetValue(typeof(T), out contract)) {
+                if (this.contracts.TryGetValue(typeof(T), out var contract)) {
                     o.OnNext((T) contract);
                 }
 
