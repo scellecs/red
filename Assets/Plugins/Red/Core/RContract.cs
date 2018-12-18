@@ -19,6 +19,8 @@ namespace Red {
         /// Unique identifier for getting different instances from single target
         /// </summary>
         public string Identifier { get; protected set; }
+        
+        protected readonly CompositeDisposable Disposables = new CompositeDisposable();
 
         /// <summary>
         /// Default place for getting sub-contracts or create complex <see cref="IObservable{T}"/>
@@ -27,6 +29,7 @@ namespace Red {
         }
 
         public virtual void Dispose() {
+            this.Disposables.Clear();
         }
 
         [AttributeUsage(AttributeTargets.All)]
