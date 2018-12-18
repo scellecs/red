@@ -202,7 +202,6 @@ namespace UniRx {
 
     /// <summary>
     /// Complex entity which returns Observable Operation at the moment execution
-    /// Delay 1 frame 
     /// </summary>
     /// <typeparam name="T">Input Type</typeparam>
     /// <typeparam name="TR">Return Type</typeparam>
