@@ -21,7 +21,7 @@ namespace Red {
         public string Identifier { get; protected set; }
         
         protected readonly CompositeDisposable Disposables = new CompositeDisposable();
-
+        
         /// <summary>
         /// Default place for getting sub-contracts or create complex <see cref="IObservable{T}"/>
         /// </summary>
@@ -85,8 +85,17 @@ namespace Red {
         /// <param name="target"></param>
         public RContract(object target) {
             this.Target = target;
+            
+            this.PreInitialize();
             this.Initialize();
+            
+        }
+        
+        private void PreInitialize() {
             Contracts.Add((T0) this);
+            Disposable
+                .Create(() => Contracts.Remove((T0)this))
+                .AddTo(this.Disposables);
         }
 
         /// <summary>
@@ -126,8 +135,8 @@ namespace Red {
                     Target = obj,
                     Identifier = identifier
                 };
+                contract.PreInitialize();
                 contract.Initialize();
-                Contracts.Add(contract);
             }
 
             return contract;
@@ -169,11 +178,6 @@ namespace Red {
         protected T1 GetSub<T1>(string identifier = "") where T1 : RContract<T1>, new() {
             var local = RContract<T1>.GetOrCreate(this.Target, identifier);
             return local;
-        }
-
-        public override void Dispose() {
-            Contracts.Remove((T0) this);
-            base.Dispose();
         }
     }
 }
