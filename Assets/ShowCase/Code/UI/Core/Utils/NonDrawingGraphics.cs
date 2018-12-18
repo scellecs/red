@@ -1,6 +1,6 @@
-﻿using UnityEngine.UI;
-
-namespace Red.Example.UI {
+﻿namespace Red.Example.UI {
+    using UnityEngine.UI;
+    
     /// A concrete subclass of the Unity UI `Graphic` class that just skips drawing.
     /// Useful for providing a raycast target without actually drawing anything.
     public class NonDrawingGraphics : Graphic {

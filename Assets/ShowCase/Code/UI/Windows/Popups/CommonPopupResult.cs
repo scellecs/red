@@ -6,8 +6,8 @@
 namespace Red.Example.UI.Windows.Popups {
     public enum CommonPopupResult {
         NotOpened = -1,
-        Close = 0,
-        Cancel = 1,
-        Ok = 2
+        Close     = 0,
+        Cancel    = 1,
+        Ok        = 2
     }
 }

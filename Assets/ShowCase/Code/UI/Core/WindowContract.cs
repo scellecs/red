@@ -3,74 +3,74 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-using System;
-using UniRx;
-using UniRx.Async;
-
 namespace Red.Example.UI {
+    using System;
+    using UniRx;
+    using UniRx.Async;
+
     public abstract class WindowContract<T, TIn, TOut> : RContractAsync<T>, IWindow<T>
         where T : RContractAsync<T>, new() {
-        
-        public readonly ReactiveProperty<TOut> Result = new ReactiveProperty<TOut>(default(TOut));
-        public IReadOnlyReactiveProperty<CanvasStage> State { get; private set; }
-        
+        public readonly ReactiveProperty<TOut>                 Result = new ReactiveProperty<TOut>(default(TOut));
+        public          IReadOnlyReactiveProperty<CanvasStage> State { get; private set; }
+
         [Output("On<Something> happened methods")]
         public readonly Subject<Unit> OnOpening = new Subject<Unit>();
-        public readonly Subject<TOut> OnClosed = new Subject<TOut>();
-        public readonly Subject<TOut> OnClosing = new Subject<TOut>();    
+        public readonly Subject<TOut> OnClosed  = new Subject<TOut>();
+        public readonly Subject<TOut> OnClosing = new Subject<TOut>();
 
         [Output("Is<Something> state methods")]
         public IReadOnlyReactiveProperty<bool> IsClosed;
 
         [Internal("Standard window Close command")]
-        public ReactiveCommand<TOut> CloseCommand  { get; set; }
+        public ReactiveCommand<TOut> CloseCommand { get; set; }
+
         [Internal("Standard window Open command")]
         public ReactiveCommand<TIn> OpenCommand { get; set; }
-        
-        private CUICanvas _canvas;
-        protected readonly CompositeDisposable _dispose = new CompositeDisposable();
+
+        private            CuiCanvas           canvas;
+        protected readonly CompositeDisposable Disposables = new CompositeDisposable();
 
         protected override async UniTask InitializeAsync() {
-            _canvas = this.GetSub<CUICanvas>();
-            State = _canvas.State;
+            this.canvas = this.GetSub<CuiCanvas>();
+            this.State  = this.canvas.State;
 
-            OpenCommand = _canvas.State.Select(s => s == CanvasStage.Closed).ToReactiveCommand<TIn>();
-            OpenCommand.Subscribe(_ => {
-                Result.Value = default(TOut);
-                _canvas.Open.Execute(false);
-            }).AddTo(_dispose);
-            
-            CloseCommand = _canvas.State.Select(s => s == CanvasStage.Opened).ToReactiveCommand<TOut>();
-            CloseCommand.Subscribe(res => {
-                Result.Value = res;
-                _canvas.Close.Execute(false);
-            }).AddTo(_dispose);
-            
-            _canvas.State.DistinctUntilChanged()
+            this.OpenCommand = this.canvas.State.Select(s => s == CanvasStage.Closed).ToReactiveCommand<TIn>();
+            this.OpenCommand.Subscribe(_ => {
+                this.Result.Value = default(TOut);
+                this.canvas.Open.Execute(false);
+            }).AddTo(this.Disposables);
+
+            this.CloseCommand = this.canvas.State.Select(s => s == CanvasStage.Opened).ToReactiveCommand<TOut>();
+            this.CloseCommand.Subscribe(res => {
+                this.Result.Value = res;
+                this.canvas.Close.Execute(false);
+            }).AddTo(this.Disposables);
+
+            this.canvas.State.DistinctUntilChanged()
                 .Where(s => s == CanvasStage.Opening)
-                .Subscribe(_ => OnOpening.OnNext(Unit.Default));
-            
-            _canvas.State.DistinctUntilChanged()
+                .Subscribe(_ => this.OnOpening.OnNext(Unit.Default));
+
+            this.canvas.State.DistinctUntilChanged()
                 .Where(s => s == CanvasStage.Closed)
-                .Select(_ => Result.Value)
-                .Subscribe(_ => OnClosed.OnNext(_)).AddTo(_dispose);
+                .Select(_ => this.Result.Value)
+                .Subscribe(_ => this.OnClosed.OnNext(_)).AddTo(this.Disposables);
 
-            _canvas.State.DistinctUntilChanged()
+            this.canvas.State.DistinctUntilChanged()
                 .Where(s => s == CanvasStage.Closing)
-                .Select(_ => Result.Value)
-                .Subscribe(_ => OnClosing.OnNext(_)).AddTo(_dispose);
+                .Select(_ => this.Result.Value)
+                .Subscribe(_ => this.OnClosing.OnNext(_)).AddTo(this.Disposables);
 
-            IsClosed = _canvas.State.Select(s => s == CanvasStage.Closed).ToReactiveProperty();
+            this.IsClosed = this.canvas.State.Select(s => s == CanvasStage.Closed).ToReactiveProperty();
 
-            await InitializeWindow();
+            await this.InitializeWindow();
         }
 
         protected virtual UniTask InitializeWindow() {
             return UniTask.CompletedTask;
         }
-        
+
         /// <summary>
-        /// Advanced async method with async result on desired closing stage
+        ///     Advanced async method with async result on desired closing stage
         /// </summary>
         /// <param name="settings">Input parameter</param>
         /// <param name="stage">Window closing stage, when observable is completed</param>
@@ -99,24 +99,24 @@ namespace Red.Example.UI {
         }
 
         public virtual bool Open() {
-            return OpenCommand.Execute(default(TIn));
+            return this.OpenCommand.Execute(default(TIn));
         }
-        
+
         public bool Open(TIn settings) {
-            return OpenCommand.Execute(settings);
+            return this.OpenCommand.Execute(settings);
         }
-        
+
         public bool Close() {
-            return CloseCommand.Execute(default(TOut));
+            return this.CloseCommand.Execute(default(TOut));
         }
-        
+
         public virtual bool Close(TOut result) {
-            return CloseCommand.Execute(result);
-        }        
-        
+            return this.CloseCommand.Execute(result);
+        }
+
         public override void Dispose() {
             base.Dispose();
-            _dispose.Clear();
+            this.Disposables.Clear();
         }
     }
 }

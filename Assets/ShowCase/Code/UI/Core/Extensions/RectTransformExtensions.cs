@@ -3,9 +3,9 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-using UnityEngine;
-
 namespace Red.Example.UI {
+    using UnityEngine;
+    
     public static class RectTransformExtensions {
         public static void Stretch(this RectTransform rect) {
             rect.anchoredPosition3D = Vector3.zero;

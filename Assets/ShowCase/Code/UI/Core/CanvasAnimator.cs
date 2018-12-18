@@ -3,40 +3,42 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-using System.Collections;
-using UniRx;
-using UnityEngine;
-
 namespace Red.Example.UI {
+    using System.Collections;
+    using UniRx;
+    using UnityEngine;
+    
     public class CanvasAnimator : MonoBehaviour {
         private static readonly Vector2 ShowPositionStart = new Vector3(0, 60);
         private static readonly Vector2 HidePositionEnd = new Vector3(0, -60);
 
-        [SerializeField] private CanvasGroup _canvasGroup;        
-        [SerializeField] private RectTransform _contents;
-        [SerializeField] private bool _closeOnAwake = true;                
-        [SerializeField] private bool _disableContentOnClose = true;        
+        [SerializeField] private CanvasGroup canvasGroup;        
+        [SerializeField] private RectTransform contents;
+        [SerializeField] private bool closeOnAwake = true;                
+        [SerializeField] private bool disableContentOnClose = true;        
         
-        private CUIManager _managerContract;
-        private CUICanvas _canvas;
-        private Vector2 _initialPosition;
+        private CuiManager managerContract;
+        private CuiCanvas canvas;
+        private Vector2 initialPosition;
 
         private void Awake() {
-            _canvas = this.GetOrCreate<CUICanvas>();
-            _initialPosition = _contents.anchoredPosition;
+            this.canvas = this.GetOrCreate<CuiCanvas>();
+            this.initialPosition = this.contents.anchoredPosition;
 
-            Bind();
+            this.Bind();
 
-            if (_closeOnAwake)
-                _canvas.Close.Execute(true);
+            if (this.closeOnAwake) {
+                this.canvas.Close.Execute(true);
+            }
         }
 
         private void Bind() {
-            _canvas.Close.Subscribe(Close);
-            _canvas.Open.Subscribe(Open);
-            _canvas.OnClosed.Subscribe(_ => {
-                if (_disableContentOnClose == true)
-                    _contents.gameObject.SetActive(false);
+            this.canvas.Close.Subscribe(this.Close);
+            this.canvas.Open.Subscribe(this.Open);
+            this.canvas.OnClosed.Subscribe(_ => {
+                if (this.disableContentOnClose == true) {
+                    this.contents.gameObject.SetActive(false);
+                }
             });
         }
 
@@ -45,21 +47,22 @@ namespace Red.Example.UI {
         /// </summary>
         /// <param name="force">Skip animation, jump through states</param>
         public void Open(bool force) {
-            if (_contents.gameObject.activeSelf == false)
-                _contents.gameObject.SetActive(true);
-            
-            _canvas.State.Value = CanvasStage.Opening;
+            if (this.contents.gameObject.activeSelf == false) {
+                this.contents.gameObject.SetActive(true);
+            }
+
+            this.canvas.State.Value = CanvasStage.Opening;
 
             if (force) {
-                _contents.anchoredPosition = _initialPosition;
-                _canvasGroup.alpha = 1;
-                _canvas.State.Value = CanvasStage.Opened;
+                this.contents.anchoredPosition = this.initialPosition;
+                this.canvasGroup.alpha = 1;
+                this.canvas.State.Value = CanvasStage.Opened;
                 return;
             }
 
-            _canvasGroup.alpha = 0;
+            this.canvasGroup.alpha = 0;
             
-            Observable.FromCoroutine(AnimateOpen).Subscribe(_ => _canvas.State.Value = CanvasStage.Opened);
+            Observable.FromCoroutine(this.AnimateOpen).Subscribe(_ => this.canvas.State.Value = CanvasStage.Opened);
         }
 
         /// <summary>
@@ -67,32 +70,34 @@ namespace Red.Example.UI {
         /// </summary>
         /// <param name="force">Skip animation, jump through states</param>
         public void Close(bool force) {
-            if (force == false && _canvas.State.Value == CanvasStage.Closed) return;
-
-            _canvas.State.Value = CanvasStage.Closing;
-
-            if (force) {
-                _canvas.State.Value = CanvasStage.Closed;
-                _canvasGroup.alpha = 0;
+            if (force == false && this.canvas.State.Value == CanvasStage.Closed) {
                 return;
             }
 
-            Observable.FromCoroutine(AnimateClose).Subscribe(_ => _canvas.State.Value = CanvasStage.Closed);
+            this.canvas.State.Value = CanvasStage.Closing;
+
+            if (force) {
+                this.canvas.State.Value = CanvasStage.Closed;
+                this.canvasGroup.alpha = 0;
+                return;
+            }
+
+            Observable.FromCoroutine(this.AnimateClose).Subscribe(_ => this.canvas.State.Value = CanvasStage.Closed);
         }
 
         private IEnumerator AnimateOpen() {
             const float duration = 0.2f;
 
             var time = 0f;
-            var positionFrom = _initialPosition + ShowPositionStart;
-            var positionTo = _initialPosition;
+            var positionFrom = this.initialPosition + ShowPositionStart;
+            var positionTo = this.initialPosition;
             
             do {
                 yield return null;                                
                 time += Time.deltaTime;
                 var t = Mathf.Clamp01(time / duration);
-                _contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
-                _canvasGroup.alpha = t;
+                this.contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
+                this.canvasGroup.alpha = t;
             } while (time < duration);
         }        
         
@@ -100,15 +105,15 @@ namespace Red.Example.UI {
             const float duration = 0.2f;
 
             var time = 0f;
-            var positionFrom = _initialPosition;
-            var positionTo = _initialPosition + HidePositionEnd;
+            var positionFrom = this.initialPosition;
+            var positionTo = this.initialPosition + HidePositionEnd;
             
             do {
                 yield return null;                                
                 time += Time.deltaTime;
                 var t = Mathf.Clamp01(time / duration);
-                _contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
-                _canvasGroup.alpha = 1f - t;
+                this.contents.anchoredPosition = Vector2.Lerp(positionFrom, positionTo, t);
+                this.canvasGroup.alpha = 1f - t;
             } while (time < duration);
         }  
     }

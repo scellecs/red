@@ -4,7 +4,7 @@
 //
 
 namespace Red.Example.UI {
-    public interface IWindow<T> where T : RContract<T>, new (){
+    public interface IWindow<T> where T : RContract<T>, new () {
         
     }
 }

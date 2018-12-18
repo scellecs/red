@@ -3,29 +3,29 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using UniRx;
-using UniRx.Async;
-using UnityEngine;
-
 namespace Red.Example.UI {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using UniRx;
+    using UniRx.Async;
+    using UnityEngine;
+
     internal class CanvasHolder {
-        public UICanvas Canvas;
-        public CUICanvas Contract;
+        public UiCanvas  Canvas;
+        public CuiCanvas Contract;
     }
 
-    public class CUIManager : RContract<CUIManager> {
-        
+    public class CuiManager : RContract<CuiManager> {
         [Input]
-        public readonly ReactiveOperation<Type, GameObject> RequestWindowOperation = new ReactiveOperation<Type, GameObject>();
-        
+        public readonly ReactiveOperation<Type, GameObject> RequestWindowOperation =
+            new ReactiveOperation<Type, GameObject>();
+
         [Output]
         public readonly IntReactiveProperty WindowsStackSize = new IntReactiveProperty(0);
 
         public async UniTask<T> ResolveWindow<T>() where T : RContract<T>, IWindow<T>, new() {
-            var go = await this.RequestWindowOperation.Execute(typeof(T));
+            var go       = await this.RequestWindowOperation.Execute(typeof(T));
             var contract = go.GetOrCreate<T>();
 
             return contract;
@@ -33,130 +33,139 @@ namespace Red.Example.UI {
     }
 
     [RequireComponent(typeof(Canvas))]
-    public class UIManager : MonoBehaviour {
-        [SerializeField] private Canvas _rootCanvas;        
-        [SerializeField] private UICanvas[] _preloadWindows;
+    public class UiManager : MonoBehaviour {
+        [SerializeField]
+        private Canvas rootCanvas;
+        [SerializeField]
+        private UiCanvas[] preloadWindows;
 
-        private readonly Dictionary<CanvasLayer, List<CanvasHolder>> _layers =
-            new Dictionary<CanvasLayer, List<CanvasHolder>>() {
+        private readonly Dictionary<CanvasLayer, List<CanvasHolder>> layers =
+            new Dictionary<CanvasLayer, List<CanvasHolder>> {
                 {CanvasLayer.Layer1, new List<CanvasHolder>(10)},
                 {CanvasLayer.Layer2, new List<CanvasHolder>(10)},
                 {CanvasLayer.Layer3, new List<CanvasHolder>(10)},
-                {CanvasLayer.Layer4, new List<CanvasHolder>(10)},
+                {CanvasLayer.Layer4, new List<CanvasHolder>(10)}
             };
 
-        private readonly Dictionary<Type, CanvasHolder> _canvasByViewType = new Dictionary<Type, CanvasHolder>();
-        private readonly Dictionary<Type, GameObject> _prefabsByViewType = new Dictionary<Type, GameObject>();
-        private readonly ReactiveCollection<CUICanvas> _closableWindowsStack = new ReactiveCollection<CUICanvas>();
+        private readonly Dictionary<Type, CanvasHolder> canvasByViewType     = new Dictionary<Type, CanvasHolder>();
+        private readonly Dictionary<Type, GameObject>   prefabsByViewType    = new Dictionary<Type, GameObject>();
+        private readonly ReactiveCollection<CuiCanvas>  closableWindowsStack = new ReactiveCollection<CuiCanvas>();
 
-        private readonly Dictionary<Type, Type> _contractToWindow = new Dictionary<Type, Type>();
+        private readonly Dictionary<Type, Type> contractToWindow = new Dictionary<Type, Type>();
 
-        private CUIManager _contract;
+        private CuiManager contract;
 
         private void Awake() {
-            _contract = this.GetOrCreate<CUIManager>();       
-            App.UI.RegisterManager(_contract);
-        }        
-        
-        private void Start() {
-            Bind();            
+            this.contract = this.GetOrCreate<CuiManager>();
+            App.UI.RegisterManager(this.contract);
+        }
 
-            var prefabs = Resources.LoadAll<UICanvas>("");
+        private void Start() {
+            this.Bind();
+
+            var prefabs = Resources.LoadAll<UiCanvas>("");
             foreach (var canvasPrefab in prefabs) {
-                var window = canvasPrefab.GetComponentInChildren<UIPresenter>();
-                _prefabsByViewType[window.GetType()] = canvasPrefab.gameObject;
-                _contractToWindow[window.ContractType] = window.GetType();
+                var window = canvasPrefab.GetComponentInChildren<IPresenter>();
+                this.prefabsByViewType[window.GetType()]   = canvasPrefab.gameObject;
+                this.contractToWindow[window.ContractType] = window.GetType();
             }
 
-            CacheExistingWindows();
+            this.CacheExistingWindows();
 
-            foreach (var prefab in _preloadWindows)
-                InstantiateWindow(prefab.gameObject);
+            foreach (var prefab in this.preloadWindows) {
+                this.InstantiateWindow(prefab.gameObject);
+            }
         }
-        
+
         private void Update() {
             if (Input.GetKeyDown(KeyCode.Escape)) {
-                CloseLastWindowInStack();
+                this.CloseLastWindowInStack();
             }
         }
 
         private void Bind() {
-            _contract.RequestWindowOperation.Subscribe(context => {
+            this.contract.RequestWindowOperation.Subscribe(context => {
                 var type = context.Parameter;
-                var win = GetOrInstantiateCanvas(type);
+                var win  = this.GetOrInstantiateCanvas(type);
                 context.OnNext(win);
                 context.OnCompleted();
             });
-            _closableWindowsStack.ObserveCountChanged().Subscribe(newCount => _contract.WindowsStackSize.Value = newCount);
+            this.closableWindowsStack.ObserveCountChanged()
+                .Subscribe(newCount => this.contract.WindowsStackSize.Value = newCount);
         }
 
         private void CloseLastWindowInStack() {
-            if (_closableWindowsStack.Count == 0) return;
+            if (this.closableWindowsStack.Count == 0) {
+                return;
+            }
 
-            var target = _closableWindowsStack.Last();
+            var target = this.closableWindowsStack.Last();
             target.CloseByEscape.Execute();
         }
 
         private void CacheExistingWindows() {
-            foreach (var canvas in _rootCanvas.GetComponentsInChildren<UICanvas>()) {
-                var contract = canvas.GetOrCreate<CUICanvas>();
-                CacheSceneWindow(canvas, contract);
+            foreach (var canvas in this.rootCanvas.GetComponentsInChildren<UiCanvas>()) {
+                var contract = canvas.GetOrCreate<CuiCanvas>();
+                this.CacheSceneWindow(canvas, contract);
             }
         }
 
         private GameObject GetOrInstantiateCanvas(Type contractType, bool instantiateMissing = true) {
-            _contractToWindow.TryGetValue(contractType, out var windowType);
+            this.contractToWindow.TryGetValue(contractType, out var windowType);
             if (windowType == null) {
                 Debug.LogError("No relation to window ContractType: " + contractType);
                 return null;
             }
 
-            if (!_canvasByViewType.ContainsKey(windowType)) {
-                return instantiateMissing == false ? null : InstantiateWindow(windowType).gameObject;
+            if (!this.canvasByViewType.ContainsKey(windowType)) {
+                return instantiateMissing == false ? null : this.InstantiateWindow(windowType).gameObject;
             }
 
-            var holder = _canvasByViewType[windowType];
+            var holder = this.canvasByViewType[windowType];
             return holder.Canvas.gameObject;
         }
 
-        private UICanvas InstantiateWindow(Type windowType) {
-            if (windowType == null || _prefabsByViewType.ContainsKey(windowType) == false) {
+        private UiCanvas InstantiateWindow(Type windowType) {
+            if (windowType == null || this.prefabsByViewType.ContainsKey(windowType) == false) {
                 Debug.LogError("UI Prefab  Windows/" + windowType + " doesn't exists");
-                return default(UICanvas);
+                return default(UiCanvas);
             }
 
-            return InstantiateWindow(_prefabsByViewType[windowType]);
+            return this.InstantiateWindow(this.prefabsByViewType[windowType]);
         }
 
-        private UICanvas InstantiateWindow(GameObject prefab) {
-            var go = Instantiate(prefab, _rootCanvas.transform);
-            var canvas = go.GetComponent<UICanvas>();
-            var contract = canvas.GetOrCreate<CUICanvas>();
-            CacheSceneWindow(canvas, contract);
+        private UiCanvas InstantiateWindow(GameObject prefab) {
+            var go       = Instantiate(prefab, this.rootCanvas.transform);
+            var canvas   = go.GetComponent<UiCanvas>();
+            var contract = canvas.GetOrCreate<CuiCanvas>();
+            this.CacheSceneWindow(canvas, contract);
 
             return canvas;
         }
 
-        private void CacheSceneWindow(UICanvas canvas, CUICanvas contract) {
-            var holder = new CanvasHolder() {
-                Canvas = canvas,
+        private void CacheSceneWindow(UiCanvas canvas, CuiCanvas contract) {
+            var holder = new CanvasHolder {
+                Canvas   = canvas,
                 Contract = contract
             };
-            contract.State.Subscribe(state => WindowStateChanged(contract, state));
+            contract.State.Subscribe(state => this.WindowStateChanged(contract, state));
 
-            _canvasByViewType.Add(canvas.Presenter.GetType(), holder);
-            _layers[contract.Layer.Value].Add(holder);
+            this.canvasByViewType.Add(canvas.Presenter.GetType(), holder);
+            this.layers[contract.Layer.Value].Add(holder);
 
-            _contractToWindow[contract.GetType()] = canvas.Presenter.ContractType;
+            this.contractToWindow[contract.GetType()] = canvas.Presenter.ContractType;
         }
 
-        private void WindowStateChanged(CUICanvas contract, CanvasStage state) {
+        private void WindowStateChanged(CuiCanvas contract, CanvasStage state) {
             switch (state) {
                 case CanvasStage.None:
                     break;
                 case CanvasStage.Opening:
-                    MoveOnTop(contract);
-                    if (contract.Modal.Value.IsStackable) _closableWindowsStack.Add(contract);
+                    this.MoveOnTop(contract);
+                    if (contract.Modal.Value.IsStackable) {
+                        this.closableWindowsStack.Add(contract);
+                    }
+
                     break;
                 case CanvasStage.Opened:
                     break;
@@ -164,20 +173,25 @@ namespace Red.Example.UI {
                     break;
                 case CanvasStage.Closed:
                     contract.Order.Value = -1;
-                    _closableWindowsStack.Remove(contract);
+                    this.closableWindowsStack.Remove(contract);
                     break;
             }
         }
 
-        private void MoveOnTop(CUICanvas contract) {
+        private void MoveOnTop(CuiCanvas contract) {
             var maxOrder = 100 * (int) contract.Layer.Value;
-            foreach (var cached in _layers[contract.Layer.Value]) {
-                if (cached.Contract == contract) continue;
+            foreach (var cached in this.layers[contract.Layer.Value]) {
+                if (cached.Contract == contract) {
+                    continue;
+                }
+
                 maxOrder = Mathf.Max(maxOrder, cached.Contract.Order.Value);
             }
 
             var order = maxOrder + 5;
-            if (maxOrder <= 0) order = 0;
+            if (maxOrder <= 0) {
+                order = 0;
+            }
 
             contract.Order.Value = order;
         }

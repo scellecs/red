@@ -3,16 +3,15 @@
 // Copyright (c) 2018 Needle. No rights reserved :)
 //
 
-using System;
-using Red.Example.UI;
-using UniRx;
-using UnityEngine;
-
 namespace Red.Example.UI {
+    using System;
+    using UniRx;
+    using UnityEngine;
+
     public class CDummyWindow1 : WindowContract<CDummyWindow1, int, Unit> {
     }
-    
-    public class DummyWindow1 : MonoBehaviour, UIPresenter {
+
+    public class DummyWindow1 : MonoBehaviour, IPresenter {
         public Type ContractType => typeof(CDummyWindow1);
 
         private CDummyWindow1 contract;

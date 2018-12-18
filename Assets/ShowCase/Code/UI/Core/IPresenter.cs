@@ -6,7 +6,7 @@
 using System;
 
 namespace Red.Example.UI {
-    public interface UIPresenter {
+    public interface IPresenter {
         Type ContractType { get; }
     }
 }

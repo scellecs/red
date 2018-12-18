@@ -7,7 +7,7 @@
 	/// </summary>
 	public static class App {
 		public static RContainer Common = new RContainer();
-		public static RContainerUI UI = new RContainerUI();
+		public static RContainerUi UI = new RContainerUi();
 		public static RContainer Player = new RContainer();
 	}
 }
