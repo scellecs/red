@@ -3,9 +3,11 @@ namespace Red {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using JetBrains.Annotations;
     using UniRx;
     using UnityEngine;
 
+    /// <inheritdoc />
     /// <summary>
     /// Base non-generic type for contracts
     /// </summary>
@@ -83,7 +85,7 @@ namespace Red {
         /// Special constructor for creating non-gameObject contracts. Also for static types.
         /// </summary>
         /// <param name="target"></param>
-        public RContract(object target) {
+        public RContract([CanBeNull] object target) {
             this.Target = target;
             
             this.PreInitialize();
@@ -99,35 +101,16 @@ namespace Red {
         }
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or create it, if it doesn't exists on current gameObject
-        /// </summary>
-        /// <typeparam name="T0">Type of contract</typeparam>
-        /// <param name="component">The component from which the gameObject is taken</param>
-        /// <param name="identifier">Unique identifier for contract</param>
-        public static T0 GetOrCreate(Component component, string identifier = "") {
-            if (component == null) throw new ArgumentNullException(nameof(component));
-            return GetOrCreate(component.gameObject, identifier);
-        }
-
-        /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or create it, if it doesn't exists on current gameObject
-        /// </summary>
-        /// <typeparam name="T0">Type of contract</typeparam>
-        /// <param name="gameObject">The gameObject that acts as an anchor</param>
-        /// <param name="identifier">Unique identifier for contract</param>
-        public static T0 GetOrCreate(GameObject gameObject, string identifier = "") {
-            if (gameObject == null) throw new ArgumentNullException(nameof(gameObject));
-            return GetOrCreate((object) gameObject, identifier);
-        }
-
-        /// <summary>
         /// Return instance <see cref="RContract{T0}"/> or create it, if it doesn't exists for current object
+        /// <para/> For null target use cctor instead
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="obj">Usual type or null</param>
         /// <param name="identifier">Unique identifier for contract</param>
         public static T0 GetOrCreate(object obj, string identifier = "") {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            if (obj == null) {
+                throw new ArgumentNullException(nameof(obj));
+            }
 
             var contract = TryGet(obj, identifier);
             if (contract == null) {
@@ -143,38 +126,26 @@ namespace Red {
         }
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or null if it doesn't exists on current gameObject
-        /// </summary>
-        /// <typeparam name="T0">Type of contract</typeparam>
-        /// <param name="component">The component from which the gameObject is taken</param>
-        /// <param name="identifier">Unique identifier for contract</param>
-        public static T0 TryGet(Component component, string identifier = "") {
-            if (component == null) throw new ArgumentNullException(nameof(component));
-            return TryGet(component.gameObject, identifier);
-        }
-
-        /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or null if it doesn't exists on current gameObject
-        /// </summary>
-        /// <typeparam name="T0">Type of contract</typeparam>
-        /// <param name="gameObject">The gameObject that acts as an anchor</param>
-        /// <param name="identifier">Unique identifier for contract</param>
-        public static T0 TryGet(GameObject gameObject, string identifier = "") {
-            if (gameObject == null) throw new ArgumentNullException(nameof(gameObject));
-            return TryGet((object) gameObject, identifier);
-        }
-
-        /// <summary>
         /// Return instance <see cref="RContract{T0}"/> or null if it doesn't exists for current object
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="obj">Usual type or null</param>
         /// <param name="identifier">Unique identifier for contract</param>
+        [CanBeNull]
         public static T0 TryGet(object obj, string identifier = "") {
-            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            if (obj == null) {
+                throw new ArgumentNullException(nameof(obj));
+            }
             return Contracts.FirstOrDefault(c => c.Target == obj && c.Identifier == identifier);
         }
 
+        /// <summary>
+        /// Returns instance <see cref="RContract{T0}"/> or create it, if it doesn't exists for current object
+        /// <para/> For null target use cctor instead
+        /// </summary>
+        /// <param name="identifier">Unique identifier for contract</param>
+        /// <typeparam name="T1">Type of contract</typeparam>
+        /// <returns>Instance of contract</returns>
         protected T1 GetOrCreate<T1>(string identifier = "") where T1 : RContract<T1>, new() {
             var local = RContract<T1>.GetOrCreate(this.Target, identifier);
             return local;

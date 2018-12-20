@@ -2,8 +2,10 @@
 namespace Red {
     using System;
     using System.Collections.Generic;
+    using JetBrains.Annotations;
     using UniRx;
 
+    /// <inheritdoc />
     /// <summary>
     /// Container for resolving global contract references.
     /// </summary>

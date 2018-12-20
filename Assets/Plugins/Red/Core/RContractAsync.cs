@@ -1,5 +1,5 @@
 #if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
-namespace Red {    
+namespace Red {
     using System;
     using JetBrains.Annotations;
     using UniRx;
@@ -17,7 +17,7 @@ namespace Red {
         protected abstract UniTask InitializeAsync();
 
         public IDisposable Subscribe(IObserver<T> observer) {
-            return this.initialized.Subscribe(observer);                
+            return this.initialized.Subscribe(observer);
         }
 
         public override void Dispose() {
