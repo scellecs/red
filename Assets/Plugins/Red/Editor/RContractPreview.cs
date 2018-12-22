@@ -10,6 +10,9 @@ namespace Red.Editor {
 
     [CustomPreview(typeof(GameObject))]
     public class RContractPreview : ObjectPreview {
+        private static Texture redCircle;
+        private static Texture greenCircle;
+
         private class ContractView {
             public string       Name;
             public MemberView[] Members;
@@ -19,12 +22,18 @@ namespace Red.Editor {
             public string Name;
             public string TypeName;
             public object LastValue;
+            public bool IsChanged;
         }
 
         private ReactiveCollection<ContractView> contractsView = new ReactiveCollection<ContractView>();
         private CompositeDisposable              disposables   = new CompositeDisposable();
+        
+        private readonly GUIContent title = new GUIContent("Red Contracts");
 
+        
         public override void Initialize(Object[] targets) {
+            this.InitializeGUIStyles();
+
             this.disposables.Clear();
 
             void CreateView(RContract contract) {
@@ -42,7 +51,11 @@ namespace Red.Editor {
                         var args = type.FindCurrentGenericTypeImplementation(typeof(IObservable<>));
                         if (args != null && args.Length > 0) {
                             var obs = ObserverProvider.CreateObserverByParameter(args[0]);
-                            obs.Value.Subscribe(obj => mv.LastValue = obj).AddTo(this.disposables);
+                            obs.Value.Subscribe(obj => {
+                                mv.LastValue = obj;
+                                mv.IsChanged = true;
+                                EditorUtility.SetDirty(this.target);
+                            }).AddTo(this.disposables);
                             var disposable =
                                 (IDisposable) type.GetMethod("Subscribe")?.Invoke(t.Item2, new object[] {obs});
                             disposable.AddTo(this.disposables);
@@ -71,8 +84,27 @@ namespace Red.Editor {
         ~RContractPreview() {
             this.disposables.Clear();
         }
+        
+        private void InitializeGUIStyles() {
+            Texture2D LoadTexture(string path) {
+                var temp = AssetDatabase.LoadAssetAtPath<Texture2D>(Paths.RedFolder + "Textures/" + path);
+                if (temp == null) {
+                    Debug.LogError($"[RED] Can't find texture for {nameof(RContractPreview)}. " +
+                                   $"Maybe you move Red folder at other path, then just change path in Paths.cs");
+                }
 
-        private readonly GUIContent title = new GUIContent("Red Contracts");
+                return temp;
+            }
+            
+            if (redCircle == null) {
+                redCircle = LoadTexture("RedCirclesDark/32x32_r.png");
+            }
+            if (greenCircle == null) {
+                greenCircle = LoadTexture("RedCirclesDark/32x32_g.png");
+            }
+        }
+
+
         public override GUIContent GetPreviewTitle() {
             return this.title;
         }
@@ -95,7 +127,23 @@ namespace Red.Editor {
                         r.x += 16f;
                         c.Members.ForEach(m => {
                             r.y += position.height;
+
+                            var textureRect = r;
+
+                            textureRect.width = textureRect.height = 8f;
+                            textureRect.x += 4;
+                            textureRect.y += 4;
+                            var texture = redCircle;
+                            if (m.IsChanged) {
+                                texture = greenCircle;
+                                m.IsChanged = false;
+                                EditorUtility.SetDirty(this.target);
+                            }
+                            GUI.DrawTexture(textureRect, texture);
+                            
+                            r.x += 16f;
                             GUI.Label(r, $"{m.Name} | {m.LastValue ?? "null"} | {m.TypeName}");
+                            r.x -= 16f;
                         });
                         r.x -= 16f;
                         r.y += position.height;
