@@ -10,13 +10,13 @@ namespace Red.Example.UI {
     
     public class RContainerUi : IDisposable {
         private readonly RContainer container = new RContainer();
-        private readonly IReadOnlyReactiveProperty<CuiManager> manager;
+        private readonly IReadOnlyReactiveProperty<CUIManager> manager;
 
         public RContainerUi() {
-            this.manager = this.container.ResolveStream<CuiManager>().ToReactiveProperty();
+            this.manager = this.container.ResolveStream<CUIManager>().ToReactiveProperty();
         }
         
-        public void RegisterManager(CuiManager manager) {
+        public void RegisterManager(CUIManager manager) {
             this.container.Register(manager);
         }
         
@@ -33,8 +33,8 @@ namespace Red.Example.UI {
             return window;
         }
         
-        public IObservable<CuiManager> ResolveManager() {
-            return this.container.ResolveAsync<CuiManager>();
+        public IObservable<CUIManager> ResolveManager() {
+            return this.container.ResolveAsync<CUIManager>();
         }
 
         public void Dispose() {

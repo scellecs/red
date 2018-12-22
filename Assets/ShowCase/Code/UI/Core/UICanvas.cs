@@ -20,13 +20,13 @@ namespace Red.Example.UI {
         }
     }
 
-    public class CuiCanvas : RContract<CuiCanvas> {
+    public class CUICanvas : RContract<CUICanvas> {
         [Output("Public states of canvas")]
         public readonly ReactiveProperty<CanvasStage> State = new ReactiveProperty<CanvasStage>(CanvasStage.Opened);
         public IReadOnlyReactiveProperty<bool> IsOpened;
 
         [Output]
-        public readonly ReactiveProperty<UiManager.CanvasLayer> Layer = new ReactiveProperty<UiManager.CanvasLayer>();
+        public readonly ReactiveProperty<UIManager.CanvasLayer> Layer = new ReactiveProperty<UIManager.CanvasLayer>();
 
         [Input]
         [Output]
@@ -62,7 +62,7 @@ namespace Red.Example.UI {
         }
     }
 
-    public class UiCanvas : MonoBehaviour {
+    public class UICanvas : MonoBehaviour {
         public IPresenter Presenter {
             get {
                 if (this.presenter != null) {
@@ -83,13 +83,13 @@ namespace Red.Example.UI {
         [SerializeField]
         private RectTransform canvasTransform;
         [SerializeField]
-        private UiManager.CanvasLayer layer;
+        private UIManager.CanvasLayer layer;
         [SerializeField]
         private CanvasModalProps modal = new CanvasModalProps(true, true);
 
         private readonly CompositeDisposable dispose = new CompositeDisposable();
         private          IPresenter          presenter;
-        private          CuiCanvas           contract;
+        private          CUICanvas           contract;
 
         private bool initialBlockRaycasts;
 
@@ -102,7 +102,7 @@ namespace Red.Example.UI {
                 this.initialBlockRaycasts = this.canvasGroup.blocksRaycasts;
             }
 
-            this.contract = this.GetOrCreate<CuiCanvas>();
+            this.contract = this.GetOrCreate<CUICanvas>();
             this.contract.AddTo(this.dispose);
             this.contract.Layer.Value = this.layer;
             this.contract.Modal.Value = this.modal;

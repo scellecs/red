@@ -27,11 +27,11 @@ namespace Red.Example.UI {
         [Internal("Standard window Open command")]
         public ReactiveCommand<TIn> OpenCommand { get; set; }
 
-        private            CuiCanvas           canvas;
+        private            CUICanvas           canvas;
         protected readonly CompositeDisposable Disposables = new CompositeDisposable();
 
         protected override async UniTask InitializeAsync() {
-            this.canvas = this.GetSub<CuiCanvas>();
+            this.canvas = this.GetSub<CUICanvas>();
             this.State  = this.canvas.State;
 
             this.OpenCommand = this.canvas.State.Select(s => s == CanvasStage.Closed).ToReactiveCommand<TIn>();

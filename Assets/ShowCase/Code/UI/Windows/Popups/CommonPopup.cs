@@ -23,7 +23,7 @@ namespace Red.Example.UI.Windows.Popups {
         private Text description;
 
         private CCommonPopup contract;
-        private CuiCanvas    canvas;
+        private CUICanvas    canvas;
 
         private void Awake() {
             this.Bind();
@@ -34,7 +34,7 @@ namespace Red.Example.UI.Windows.Popups {
         /// </summary>
         private void Bind() {
             this.contract = this.GetOrCreate<CCommonPopup>();
-            this.canvas   = this.GetOrCreate<CuiCanvas>();
+            this.canvas   = this.GetOrCreate<CUICanvas>();
             this.contract.OpenCommand.Subscribe(this.Setup);
 
             var selector  = this.canvas.State.Select(s => s == CanvasStage.Opened);

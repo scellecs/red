@@ -17,12 +17,12 @@ namespace Red.Example.UI {
         [SerializeField] private bool closeOnAwake = true;                
         [SerializeField] private bool disableContentOnClose = true;        
         
-        private CuiManager managerContract;
-        private CuiCanvas canvas;
+        private CUIManager managerContract;
+        private CUICanvas canvas;
         private Vector2 initialPosition;
 
         private void Awake() {
-            this.canvas = this.GetOrCreate<CuiCanvas>();
+            this.canvas = this.GetOrCreate<CUICanvas>();
             this.initialPosition = this.contents.anchoredPosition;
 
             this.Bind();
