@@ -179,12 +179,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3dba116de6cf848309f33e47f1288e5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _canvas: {fileID: 223559023072396978}
-  _canvasGroup: {fileID: 225415302307334988}
-  _raycaster: {fileID: 114018833406952556}
-  _canvasTransform: {fileID: 224617803058568122}
-  _layer: 1
-  _modal:
+  canvas: {fileID: 223559023072396978}
+  canvasGroup: {fileID: 225415302307334988}
+  raycaster: {fileID: 114018833406952556}
+  canvasTransform: {fileID: 224617803058568122}
+  layer: 1
+  modal:
     IsStackable: 1
     IsClosableByEscape: 1
 --- !u!114 &114326934354167526
@@ -359,10 +359,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be1c256564eb450693b6f27c21a3f58f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _canvasGroup: {fileID: 225415302307334988}
-  _contents: {fileID: 224599134778834356}
-  _closeOnAwake: 1
-  _disableContentOnClose: 1
+  canvasGroup: {fileID: 225415302307334988}
+  contents: {fileID: 224599134778834356}
+  closeOnAwake: 1
+  disableContentOnClose: 1
 --- !u!114 &114999391877220898
 MonoBehaviour:
   m_ObjectHideFlags: 1

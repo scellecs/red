@@ -20,6 +20,16 @@ namespace Red.Example.UI {
         private CUIManager managerContract;
         private CUICanvas canvas;
         private Vector2 initialPosition;
+        
+        private void OnValidate() {
+            if (this.contents == null) {
+                this.contents = this.transform.Find("Contents")?.GetComponent<RectTransform>();
+            }
+
+            if (this.canvasGroup == null) {
+                this.canvasGroup = this.GetComponent<CanvasGroup>();
+            }
+        }
 
         private void Awake() {
             this.canvas = this.GetOrCreate<CUICanvas>();

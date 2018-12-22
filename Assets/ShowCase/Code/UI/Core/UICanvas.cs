@@ -93,6 +93,24 @@ namespace Red.Example.UI {
 
         private bool initialBlockRaycasts;
 
+        private void OnValidate() {
+            if (this.canvas == null) {
+                this.canvas = this.GetComponent<Canvas>();
+            }
+            if (this.canvasGroup == null) {
+                this.canvasGroup = this.GetComponent<CanvasGroup>();
+            }
+            if (this.raycaster == null) {
+                this.raycaster = this.GetComponent<GraphicRaycaster>();
+            }
+            if (this.canvasTransform == null) {
+                this.canvasTransform = this.GetComponent<RectTransform>();
+            }
+            if (this.canvasTransform == null) {
+                this.canvasTransform = this.GetComponent<RectTransform>();
+            }
+        }
+
         private void OnEnable() {
             this.canvasTransform.Stretch();
             this.canvasTransform.anchoredPosition3D = Vector3.zero;
