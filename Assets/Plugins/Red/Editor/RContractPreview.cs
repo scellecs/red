@@ -22,15 +22,15 @@ namespace Red.Editor {
             public string Name;
             public string TypeName;
             public object LastValue;
-            public bool IsChanged;
+            public bool   IsChanged;
         }
 
         private ReactiveCollection<ContractView> contractsView = new ReactiveCollection<ContractView>();
         private CompositeDisposable              disposables   = new CompositeDisposable();
-        
+
         private readonly GUIContent title = new GUIContent("Red Contracts");
 
-        
+
         public override void Initialize(Object[] targets) {
             this.InitializeGUIStyles();
 
@@ -84,7 +84,7 @@ namespace Red.Editor {
         ~RContractPreview() {
             this.disposables.Clear();
         }
-        
+
         private void InitializeGUIStyles() {
             Texture2D LoadTexture(string path) {
                 var temp = AssetDatabase.LoadAssetAtPath<Texture2D>(Paths.RedFolder + "Textures/" + path);
@@ -95,10 +95,11 @@ namespace Red.Editor {
 
                 return temp;
             }
-            
+
             if (redCircle == null) {
                 redCircle = LoadTexture("RedCirclesDark/32x32_r.png");
             }
+
             if (greenCircle == null) {
                 greenCircle = LoadTexture("RedCirclesDark/32x32_g.png");
             }
@@ -125,29 +126,61 @@ namespace Red.Editor {
                     this.contractsView.ForEach(c => {
                         GUI.Label(r, $"{c.Name}");
                         r.x += 16f;
+                        float maxNameSize  = 1f;
+                        float maxValueSize = 40f;
+                        var   rt           = r;
                         c.Members.ForEach(m => {
                             r.y += position.height;
 
                             var textureRect = r;
 
-                            textureRect.width = textureRect.height = 8f;
-                            textureRect.x += 4;
-                            textureRect.y += 4;
+                            textureRect.width =  textureRect.height = 8f;
+                            textureRect.x     += 4;
+                            textureRect.y     += 4;
                             var texture = redCircle;
                             if (m.IsChanged) {
-                                texture = greenCircle;
+                                texture     = greenCircle;
                                 m.IsChanged = false;
                                 EditorUtility.SetDirty(this.target);
                             }
+
                             GUI.DrawTexture(textureRect, texture);
-                            
+
                             r.x += 16f;
-                            GUI.Label(r, $"{m.Name} | {m.LastValue ?? "null"} | {m.TypeName}");
+                            var s = background.CalcSize(new GUIContent($"{m.Name}"));
+                            maxNameSize = maxNameSize > s.x ? maxNameSize : s.x;
+                            GUI.Label(r, $"{m.Name}");
                             r.x -= 16f;
                         });
+                        r.y = rt.y;
+                        c.Members.ForEach(m => {
+                            r.y += position.height;
+                            r.x += 16f;
+                            var s = background.CalcSize(new GUIContent($"| {m.LastValue ?? "null"}"));
+                            maxValueSize =  maxValueSize > s.x ? maxValueSize : s.x;
+                            r.x          += maxNameSize;
+                            GUI.Label(r, $"| {m.LastValue ?? "null"}");
+                            r.x -= maxNameSize;
+                            r.x -= 16f;
+                        });
+
+                        r.y = rt.y;
+                        c.Members.ForEach(m => {
+                            r.y += position.height;
+                            r.x += 16f;
+                            var ts = maxNameSize + maxValueSize;
+                            r.x += ts ;
+                            GUI.Label(r, $"| {m.TypeName}");
+                            r.x -= ts ;
+                            r.x -= 16f;
+                        });
+
                         r.x -= 16f;
                         r.y += position.height;
+                        GUI.Label(r, $"______________________________________________________________________________");
+                        r.y += 16f;
                     });
+                    
                 }
                 else {
                     GUI.Label(r, "There aren't any contracts.");
