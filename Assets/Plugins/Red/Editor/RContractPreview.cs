@@ -60,11 +60,11 @@ namespace Red.Editor {
                                 mv.IsChanged = true;
                                 EditorUtility.SetDirty(this.target);
                             }).AddTo(this.disposables);
-                            obs.Complete.Skip(1).Subscribe(_ => {
+                            obs.Complete.Subscribe(_ => {
                                 mv.IsCompleted = true;
                                 EditorUtility.SetDirty(this.target);
                             }).AddTo(this.disposables);
-                            obs.Error.Skip(1).Subscribe(_ => {
+                            obs.Error.Subscribe(_ => {
                                 mv.IsErrors = true;
                                 EditorUtility.SetDirty(this.target);
                             }).AddTo(this.disposables);
@@ -115,7 +115,7 @@ namespace Red.Editor {
             if (greenCircle == null) {
                 greenCircle = LoadTexture("RedCirclesDark/32x32_g.png");
             }
-            
+
             if (blueCircle == null) {
                 blueCircle = LoadTexture("RedCirclesDark/32x32_b.png");
             }
@@ -149,7 +149,7 @@ namespace Red.Editor {
                 var x        = r.x + 10f;
                 var y        = r.y + 10f;
                 var position = new Rect(x, y, offset.x, offset.y);
-                
+
                 if (this.contractsView != null && this.contractsView.Count > 0) {
                     var maxNameSize  = 1f;
                     var maxValueSize = 40f;
@@ -220,7 +220,7 @@ namespace Red.Editor {
                         r.y += 16f;
                     });
 
-                    this.maxContentWidth = 5 + 32 + maxNameSize + maxValueSize + maxTypeSize;
+                    this.maxContentWidth  = 5 + 32 + maxNameSize + maxValueSize + maxTypeSize;
                     this.maxContentHeight = r.y;
                 }
                 else {
@@ -259,9 +259,9 @@ namespace Red.Editor {
 
     //TODO rework to Subject<T> ???
     public class ObserverProvider {
-        public ReactiveProperty<object>    Value    { get; } = new ReactiveProperty<object>();
-        public ReactiveProperty<Exception> Error    { get; } = new ReactiveProperty<Exception>();
-        public ReactiveCommand             Complete { get; } = new ReactiveCommand();
+        public ReactiveCommand<object>    Value    { get; } = new ReactiveCommand<object>();
+        public ReactiveCommand<Exception> Error    { get; } = new ReactiveCommand<Exception>();
+        public ReactiveCommand            Complete { get; } = new ReactiveCommand();
 
         public static ObserverProvider CreateObserverByParameter(Type parameterType) {
             var createObserver = typeof(ObserverProvider).GetMethod("CreateObserver")
@@ -281,11 +281,11 @@ namespace Red.Editor {
         }
 
         public void OnError(Exception error) {
-            this.Error.Value = error;
+            this.Error.Execute(error);
         }
 
         public void OnNext(T value) {
-            this.Value.Value = value;
+            this.Value.Execute(value);
         }
     }
 }
