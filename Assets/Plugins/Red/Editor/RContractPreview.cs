@@ -114,7 +114,11 @@ namespace Red.Editor {
             return true;
         }
 
+        private float maxContentWidth = 300;
+        //don't touch this, idk how it's works
         public override void OnPreviewGUI(Rect r, GUIStyle background) {
+            this.scrollPosition = GUI.BeginScrollView(r, this.scrollPosition, new Rect(0, 0, this.maxContentWidth, 220));
+            r = new Rect(0, 0, this.maxContentWidth, 220);
             if (Event.current.type == EventType.Repaint) {
                 var offset     = new Vector2(140f, 16f);
                 var rectOffset = new RectOffset(-5, -5, -5, -5);
@@ -126,8 +130,9 @@ namespace Red.Editor {
                     this.contractsView.ForEach(c => {
                         GUI.Label(r, $"{c.Name}");
                         r.x += 16f;
-                        float maxNameSize  = 1f;
-                        float maxValueSize = 40f;
+                        var maxNameSize  = 1f;
+                        var maxValueSize = 40f;
+                        var maxTypeSize = 40f;
                         var   rt           = r;
                         c.Members.ForEach(m => {
                             r.y += position.height;
@@ -168,6 +173,8 @@ namespace Red.Editor {
                         c.Members.ForEach(m => {
                             r.y += position.height;
                             r.x += 16f;
+                            var s = background.CalcSize(new GUIContent($"| {m.TypeName}"));
+                            maxTypeSize = maxTypeSize > s.x ? maxTypeSize : s.x;
                             var ts = maxNameSize + maxValueSize;
                             r.x += ts ;
                             GUI.Label(r, $"| {m.TypeName}");
@@ -175,6 +182,7 @@ namespace Red.Editor {
                             r.x -= 16f;
                         });
 
+                        this.maxContentWidth = 5 + 32 + maxNameSize + maxValueSize + maxTypeSize;
                         r.x -= 16f;
                         r.y += position.height;
                         GUI.Label(r, $"______________________________________________________________________________");
@@ -186,6 +194,7 @@ namespace Red.Editor {
                     GUI.Label(r, "There aren't any contracts.");
                 }
             }
+            GUI.EndScrollView();
         }
 
         private List<Type> types = new List<Type> {
@@ -193,6 +202,7 @@ namespace Red.Editor {
 //            typeof(ReactiveDictionary<,>),
 //            typeof(ReactiveCollection<>),
         };
+        private Vector2 scrollPosition;
 
         private IEnumerable<(string, object)> GetAllMembers(object instance) {
             var fields = instance
