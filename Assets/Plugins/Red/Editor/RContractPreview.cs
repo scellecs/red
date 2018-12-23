@@ -12,6 +12,8 @@ namespace Red.Editor {
     public class RContractPreview : ObjectPreview {
         private static Texture redCircle;
         private static Texture greenCircle;
+        private static Texture blueCircle;
+        private static Texture yellowCircle;
 
         private class ContractView {
             public string       Name;
@@ -23,6 +25,8 @@ namespace Red.Editor {
             public string TypeName;
             public object LastValue;
             public bool   IsChanged;
+            public bool   IsCompleted;
+            public bool   IsErrors;
         }
 
         private ReactiveCollection<ContractView> contractsView = new ReactiveCollection<ContractView>();
@@ -54,6 +58,14 @@ namespace Red.Editor {
                             obs.Value.Subscribe(obj => {
                                 mv.LastValue = obj;
                                 mv.IsChanged = true;
+                                EditorUtility.SetDirty(this.target);
+                            }).AddTo(this.disposables);
+                            obs.Complete.Skip(1).Subscribe(_ => {
+                                mv.IsCompleted = true;
+                                EditorUtility.SetDirty(this.target);
+                            }).AddTo(this.disposables);
+                            obs.Error.Skip(1).Subscribe(_ => {
+                                mv.IsErrors = true;
                                 EditorUtility.SetDirty(this.target);
                             }).AddTo(this.disposables);
                             var disposable =
@@ -103,6 +115,14 @@ namespace Red.Editor {
             if (greenCircle == null) {
                 greenCircle = LoadTexture("RedCirclesDark/32x32_g.png");
             }
+            
+            if (blueCircle == null) {
+                blueCircle = LoadTexture("RedCirclesDark/32x32_b.png");
+            }
+
+            if (yellowCircle == null) {
+                yellowCircle = LoadTexture("RedCirclesDark/32x32_y.png");
+            }
         }
 
 
@@ -148,8 +168,14 @@ namespace Red.Editor {
                             textureRect.width =  textureRect.height = 8f;
                             textureRect.x     += 4;
                             textureRect.y     += 4;
-                            var texture = redCircle;
-                            if (m.IsChanged) {
+                            var texture = yellowCircle;
+                            if (m.IsErrors) {
+                                texture = redCircle;
+                            }
+                            else if (m.IsCompleted) {
+                                texture = blueCircle;
+                            }
+                            else if (m.IsChanged) {
                                 texture     = greenCircle;
                                 m.IsChanged = false;
                                 EditorUtility.SetDirty(this.target);
