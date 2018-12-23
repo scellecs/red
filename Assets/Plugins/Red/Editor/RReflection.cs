@@ -1,7 +1,8 @@
-#if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
+#if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))  && UNITY_EDITOR
 namespace Red.Editor {
     using System;
     using System.Linq;
+    using JetBrains.Annotations;
 
     internal static class RReflectionExtensions {
         internal static Type[] FindCurrentGenericTypeImplementation(this Type child, Type parent) {
@@ -64,6 +65,7 @@ namespace Red.Editor {
                 });
         }
 
+        [CanBeNull]
         private static Type[] GetGenericArgumentsFromInterfaces(Type parent, Type child) {
             var interf = child.GetInterfaces()
                 .FirstOrDefault(childInterface =>
