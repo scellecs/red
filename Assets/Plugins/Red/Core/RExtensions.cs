@@ -2,6 +2,7 @@
 namespace Red {
     using System;
     using System.Collections.Generic;
+    using JetBrains.Annotations;
     using UniRx;
     using UniRx.Async;
     using UnityEngine;
@@ -13,8 +14,9 @@ namespace Red {
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
         /// <param name="identifier">Unique identifier for contract</param>
+        [CanBeNull]
         public static T TryGet<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
-            return RContract<T>.TryGet(component, identifier);
+            return RContract<T>.TryGet(component.gameObject, identifier);
         }
 
         /// <summary>
@@ -23,6 +25,7 @@ namespace Red {
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
         /// <param name="identifier">Unique identifier for contract</param>
+        [CanBeNull]
         public static T TryGet<T>(this GameObject gameObject, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(gameObject, identifier);
         }
@@ -34,7 +37,7 @@ namespace Red {
         /// <param name="component">The component from which the gameObject is taken</param>
         /// <param name="identifier">Unique identifier for contract</param>
         public static T GetOrCreate<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
-            return RContract<T>.GetOrCreate(component, identifier);
+            return RContract<T>.GetOrCreate(component.gameObject, identifier);
         }
 
 
@@ -89,8 +92,7 @@ namespace Red {
         /// </summary>
         /// <param name="timeSpan">Any TimeSpan</param>
         /// <returns>Awaiter</returns>
-        public static AsyncSubject<long> GetAwaiter(this TimeSpan timeSpan)
-        {
+        public static AsyncSubject<long> GetAwaiter(this TimeSpan timeSpan) {
             return Observable.Timer(timeSpan).GetAwaiter();
         }
 
@@ -171,11 +173,11 @@ namespace UniRx {
             }
             
             Interlocked.Increment(ref this.countObservers);
-            var subscription = this.subject.Subscribe(observer);
-            var decrement = Disposable.Create(() =>
-            {
+            var decrement = Disposable.Create(() => {
                 Interlocked.Decrement(ref this.countObservers);
             });
+            
+            var subscription = this.subject.Subscribe(observer);
             
             return new CompositeDisposable(subscription, decrement);
         }
@@ -209,7 +211,7 @@ namespace UniRx {
         private readonly Subject<OperationContext<T, TR>> trigger = new Subject<OperationContext<T, TR>>();
 
         public IObservable<TR> Execute(T parameter) {
-            var operation = new OperationContext<T, TR>(parameter); 
+            var operation = new OperationContext<T, TR>(parameter);
             this.trigger.OnNext(operation);
             return operation;
         }
