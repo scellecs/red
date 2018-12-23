@@ -168,9 +168,9 @@ namespace Red.Editor {
                             textureRect.width =  textureRect.height = 8f;
                             textureRect.x     += 4;
                             textureRect.y     += 4;
-                            var texture = yellowCircle;
+                            var texture = redCircle;
                             if (m.IsErrors) {
-                                texture = redCircle;
+                                texture = yellowCircle;
                             }
                             else if (m.IsCompleted) {
                                 texture = blueCircle;
