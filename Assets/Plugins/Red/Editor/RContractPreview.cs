@@ -114,11 +114,14 @@ namespace Red.Editor {
             return true;
         }
 
-        private float maxContentWidth = 300;
+        private float maxContentWidth  = 300;
+        private float maxContentHeight = 80;
+
         //don't touch this, idk how it's works
         public override void OnPreviewGUI(Rect r, GUIStyle background) {
-            this.scrollPosition = GUI.BeginScrollView(r, this.scrollPosition, new Rect(0, 0, this.maxContentWidth, 220));
-            r = new Rect(0, 0, this.maxContentWidth, 220);
+            this.scrollPosition = GUI.BeginScrollView(r, this.scrollPosition,
+                new Rect(0, 0, this.maxContentWidth, this.maxContentHeight));
+            r = new Rect(0, 0, this.maxContentWidth, this.maxContentHeight);
             if (Event.current.type == EventType.Repaint) {
                 var offset     = new Vector2(140f, 16f);
                 var rectOffset = new RectOffset(-5, -5, -5, -5);
@@ -126,14 +129,17 @@ namespace Red.Editor {
                 var x        = r.x + 10f;
                 var y        = r.y + 10f;
                 var position = new Rect(x, y, offset.x, offset.y);
+                
                 if (this.contractsView != null && this.contractsView.Count > 0) {
+                    var maxNameSize  = 1f;
+                    var maxValueSize = 40f;
+                    var maxTypeSize  = 40f;
+
                     this.contractsView.ForEach(c => {
                         GUI.Label(r, $"{c.Name}");
                         r.x += 16f;
-                        var maxNameSize  = 1f;
-                        var maxValueSize = 40f;
-                        var maxTypeSize = 40f;
-                        var   rt           = r;
+                        var rt = r;
+
                         c.Members.ForEach(m => {
                             r.y += position.height;
 
@@ -176,24 +182,26 @@ namespace Red.Editor {
                             var s = background.CalcSize(new GUIContent($"| {m.TypeName}"));
                             maxTypeSize = maxTypeSize > s.x ? maxTypeSize : s.x;
                             var ts = maxNameSize + maxValueSize;
-                            r.x += ts ;
+                            r.x += ts;
                             GUI.Label(r, $"| {m.TypeName}");
-                            r.x -= ts ;
+                            r.x -= ts;
                             r.x -= 16f;
                         });
 
-                        this.maxContentWidth = 5 + 32 + maxNameSize + maxValueSize + maxTypeSize;
                         r.x -= 16f;
                         r.y += position.height;
                         GUI.Label(r, $"______________________________________________________________________________");
                         r.y += 16f;
                     });
-                    
+
+                    this.maxContentWidth = 5 + 32 + maxNameSize + maxValueSize + maxTypeSize;
+                    this.maxContentHeight = r.y;
                 }
                 else {
                     GUI.Label(r, "There aren't any contracts.");
                 }
             }
+
             GUI.EndScrollView();
         }
 
