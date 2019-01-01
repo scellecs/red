@@ -10,7 +10,7 @@ namespace Red.Editor {
     public class RDefines {
         private static readonly string[] Defines = {"UNIRX", "RED"};
 
-        private static readonly char[] DefineSeperators = new char[] {
+        private static readonly char[] DefineSeperators = {
             ';',
             ',',
             ' '
