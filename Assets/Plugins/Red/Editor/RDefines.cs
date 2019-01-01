@@ -10,24 +10,24 @@ namespace Red.Editor {
     public class RDefines {
         private static readonly string[] Defines = {"UNIRX", "RED"};
 
-        private static readonly char[] DefineSeperators = {
+        private static readonly char[] DefineSeparators = {
             ';',
             ',',
             ' '
         };
 
         static RDefines() {
-            UpdateDefineSymbols();
+            RDefines.UpdateDefineSymbols();
         }
 
         private static void UpdateDefineSymbols() {
             var target = EditorUserBuildSettings.selectedBuildTargetGroup;
 
             var symbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(target)
-                .Split(DefineSeperators, StringSplitOptions.RemoveEmptyEntries);
+                .Split(RDefines.DefineSeparators, StringSplitOptions.RemoveEmptyEntries);
             var newSymbols = new List<string>(symbols);
 
-            Defines
+            RDefines.Defines
                 .Where(def => newSymbols.Contains(def) == false)
                 .ForEach(def => {
                     newSymbols.Add(def);
