@@ -9,7 +9,7 @@ namespace Red {
 
     public static class RContractExtension {
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or null if it doesn't exists for current object
+        ///     Return instance <see cref="RContract{T0}" /> or null if it doesn't exists for current object
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
@@ -20,7 +20,7 @@ namespace Red {
         }
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or null if it doesn't exists for current object
+        ///     Return instance <see cref="RContract{T0}" /> or null if it doesn't exists for current object
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
@@ -31,7 +31,7 @@ namespace Red {
         }
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or create it, if it doesn't exists on current gameObject
+        ///     Return instance <see cref="RContract{T0}" /> or create it, if it doesn't exists on current gameObject
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="component">The component from which the gameObject is taken</param>
@@ -42,17 +42,18 @@ namespace Red {
 
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or create it, if it doesn't exists on current gameObject
+        ///     Return instance <see cref="RContract{T0}" /> or create it, if it doesn't exists on current gameObject
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         /// <param name="gameObject">The gameObject that acts as an anchor</param>
         /// <param name="identifier">Unique identifier for contract</param>
-        public static T GetOrCreate<T>(this GameObject gameObject, string identifier = "") where T : RContract<T>, new() {
+        public static T GetOrCreate<T>(this GameObject gameObject, string identifier = "")
+            where T : RContract<T>, new() {
             return RContract<T>.GetOrCreate(gameObject, identifier);
         }
 
         /// <summary>
-        /// Register contract in container
+        ///     Register contract in container
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         public static void RegisterIn<T>(this T contract, RContainer container) where T : RContract {
@@ -62,7 +63,7 @@ namespace Red {
 
     public static class RLinqExtension {
         /// <summary>
-        /// Default iteration in functional style.
+        ///     Default iteration in functional style.
         /// </summary>
         /// <param name="source">Some Enumerable</param>
         /// <param name="action">Functor</param>
@@ -71,10 +72,10 @@ namespace Red {
             foreach (var element in source) {
                 action(element);
             }
-        } 
-        
+        }
+
         /// <summary>
-        /// Sequential iteration for async API.
+        ///     Sequential iteration for async API.
         /// </summary>
         /// <param name="source">Some Enumerable</param>
         /// <param name="action">Functor</param>
@@ -88,7 +89,7 @@ namespace Red {
 
     public static class RExtensions {
         /// <summary>
-        /// Awaiter for TimeSpan.
+        ///     Awaiter for TimeSpan.
         /// </summary>
         /// <param name="timeSpan">Any TimeSpan</param>
         /// <returns>Awaiter</returns>
@@ -97,7 +98,7 @@ namespace Red {
         }
 
         /// <summary>
-        /// Add contract to GameObject. Contract will be disposed when GameObject is destroyed.
+        ///     Add contract to GameObject. Contract will be disposed when GameObject is destroyed.
         /// </summary>
         /// <param name="disposable"></param>
         /// <param name="contract"></param>
@@ -108,7 +109,7 @@ namespace Red {
                 disposable.AddTo(o);
                 return disposable;
             }
-            
+
             disposable.Dispose();
             return disposable;
         }
@@ -124,34 +125,34 @@ namespace UniRx {
     public interface IReactiveOperation<T, TR> : IObservable<IOperationContext<T, TR>> {
         IObservable<TR> Execute(T parameter);
     }
-    
+
     public interface IOperationContext<out T, in TR> : IObserver<TR> {
         T Parameter { get; }
     }
 
     /// <summary>
-    /// Utility class for <see cref="ReactiveOperation{T,TR}"/>
+    ///     Utility class for <see cref="ReactiveOperation{T,TR}" />
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TR"></typeparam>
     public class OperationContext<T, TR> : IOperationContext<T, TR>, IObservable<TR> {
         public T Parameter { get; }
-        
-        private readonly Subject<TR> subject;
-        private readonly Queue<TR> queue;
+
+        private readonly Subject<TR>      subject;
+        private readonly Queue<TR>        queue;
         private readonly Queue<Exception> queueExceptions;
-        
+
         private bool isComplete;
-        private int countObservers;
+        private int  countObservers;
 
         public OperationContext(T parameter) {
             this.Parameter = parameter;
-            
-            this.subject = new Subject<TR>();
-            this.queue = new Queue<TR>();
+
+            this.subject         = new Subject<TR>();
+            this.queue           = new Queue<TR>();
             this.queueExceptions = new Queue<Exception>();
-            
-            this.isComplete = false;
+
+            this.isComplete     = false;
             this.countObservers = 0;
         }
 
@@ -160,6 +161,7 @@ namespace UniRx {
                 foreach (var value in this.queue) {
                     observer.OnNext(value);
                 }
+
                 foreach (var exception in this.queueExceptions) {
                     observer.OnError(exception);
                 }
@@ -167,18 +169,16 @@ namespace UniRx {
                 if (this.isComplete) {
                     observer.OnCompleted();
                 }
-                
+
                 this.queue.Clear();
                 this.queueExceptions.Clear();
             }
-            
+
             Interlocked.Increment(ref this.countObservers);
-            var decrement = Disposable.Create(() => {
-                Interlocked.Decrement(ref this.countObservers);
-            });
-            
+            var decrement = Disposable.Create(() => { Interlocked.Decrement(ref this.countObservers); });
+
             var subscription = this.subject.Subscribe(observer);
-            
+
             return new CompositeDisposable(subscription, decrement);
         }
 
@@ -191,6 +191,7 @@ namespace UniRx {
             if (this.countObservers == 0) {
                 this.queueExceptions.Enqueue(error);
             }
+
             this.subject.OnError(error);
         }
 
@@ -198,12 +199,13 @@ namespace UniRx {
             if (this.countObservers == 0) {
                 this.queue.Enqueue(value);
             }
+
             this.subject.OnNext(value);
         }
     }
 
     /// <summary>
-    /// Complex entity which returns Observable Operation at the moment execution
+    ///     Complex entity which returns Observable Operation at the moment execution
     /// </summary>
     /// <typeparam name="T">Input Type</typeparam>
     /// <typeparam name="TR">Return Type</typeparam>
