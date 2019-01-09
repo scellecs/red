@@ -18,7 +18,7 @@ namespace Red {
         public static T TryGet<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(component.gameObject, identifier);
         }
-
+        
         /// <summary>
         ///     Return instance <see cref="RContract{T0}" /> or null if it doesn't exists for current object
         /// </summary>
@@ -28,6 +28,32 @@ namespace Red {
         [CanBeNull]
         public static T TryGet<T>(this GameObject gameObject, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(gameObject, identifier);
+        }
+        
+        /// <summary>
+        ///     Search for the instance of <see cref="RContract{T0}" />
+        /// </summary>
+        /// <typeparam name="T">Type of contract</typeparam>
+        /// <param name="gameObject">The gameObject that acts as an anchor</param>
+        /// <param name="contract">Instance of <see cref="RContract{T0}" /> or null</param>
+        /// <param name="identifier">Unique identifier for contract</param>
+        /// <returns>True if found, false if instance is null</returns>
+        public static bool TryGet<T>(this GameObject gameObject, [CanBeNull] out T contract, string identifier = "") where T : RContract<T>, new() {
+            contract = RContract<T>.TryGet(gameObject, identifier);
+            return contract != null;
+        }        
+        
+        /// <summary>
+        ///     Search for the instance of <see cref="RContract{T0}" />
+        /// </summary>
+        /// <typeparam name="T">Type of contract</typeparam>
+        /// <param name="component">The component from which the gameObject is taken</param>
+        /// <param name="contract">Instance of <see cref="RContract{T0}" /> or null</param>
+        /// <param name="identifier">Unique identifier for contract</param>
+        /// <returns>True if found, false if instance is null</returns>
+        public static bool TryGet<T>(this Component component, [CanBeNull] out T contract, string identifier = "") where T : RContract<T>, new() {
+            contract = RContract<T>.TryGet(component.gameObject, identifier);
+            return contract != null;
         }
 
         /// <summary>
@@ -39,7 +65,6 @@ namespace Red {
         public static T GetOrCreate<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.GetOrCreate(component.gameObject, identifier);
         }
-
 
         /// <summary>
         ///     Return instance <see cref="RContract{T0}" /> or create it, if it doesn't exists on current gameObject
