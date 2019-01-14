@@ -11,6 +11,11 @@ namespace Red {
     ///     Base non-generic type for contracts
     /// </summary>
     public abstract class RContract : IDisposable {
+#if UNITY_EDITOR
+        internal static ReactiveDictionary<object, ReactiveCollection<RContract>> AllContracts 
+            = new ReactiveDictionary<object, ReactiveCollection<RContract>>();
+#endif
+
         /// <summary>
         ///     Reference for object with which the contract is associated
         /// </summary>
@@ -22,6 +27,19 @@ namespace Red {
         public string Identifier { get; protected set; }
 
         protected readonly CompositeDisposable Disposables = new CompositeDisposable();
+
+        protected virtual void PreInitialize() {
+#if UNITY_EDITOR
+            if (this.Target != null) {
+                if (AllContracts.TryGetValue(this.Target, out var list)) {
+                    list.Add(this);
+                }
+                else {
+                    AllContracts.Add(this.Target, new ReactiveCollection<RContract> {this});
+                }
+            }
+#endif
+        }
 
         /// <summary>
         ///     Default place for getting sub-contracts or create complex <see cref="IObservable{T}" />
@@ -91,9 +109,11 @@ namespace Red {
             this.PreInitialize();
             this.Initialize();
         }
-
-        private void PreInitialize() {
+      
+        protected override void PreInitialize() {
+            base.PreInitialize();
             RContract<T0>.Contracts.Add((T0) this);
+  
             Disposable
                 .Create(() => RContract<T0>.Contracts.Remove((T0) this))
                 .AddTo(this.Disposables);
