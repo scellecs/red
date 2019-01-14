@@ -5,11 +5,10 @@ namespace Red {
     using System.Linq;
     using JetBrains.Annotations;
     using UniRx;
-    using UnityEngine;
 
     /// <inheritdoc />
     /// <summary>
-    /// Base non-generic type for contracts
+    ///     Base non-generic type for contracts
     /// </summary>
     public abstract class RContract : IDisposable {
 #if UNITY_EDITOR
@@ -18,17 +17,16 @@ namespace Red {
 #endif
 
         /// <summary>
-        /// Reference for object with which the contract is associated
+        ///     Reference for object with which the contract is associated
         /// </summary>
         public object Target { get; protected set; }
 
         /// <summary>
-        /// Unique identifier for getting different instances from single target
+        ///     Unique identifier for getting different instances from single target
         /// </summary>
         public string Identifier { get; protected set; }
-        
+
         protected readonly CompositeDisposable Disposables = new CompositeDisposable();
-        
 
         protected virtual void PreInitialize() {
 #if UNITY_EDITOR
@@ -44,7 +42,7 @@ namespace Red {
         }
 
         /// <summary>
-        /// Default place for getting sub-contracts or create complex <see cref="IObservable{T}"/>
+        ///     Default place for getting sub-contracts or create complex <see cref="IObservable{T}" />
         /// </summary>
         protected virtual void Initialize() {
         }
@@ -91,7 +89,8 @@ namespace Red {
     }
 
     /// <summary>
-    /// Mediator for <see cref="UniRx.ReactiveCommand"/>, <see cref="UniRx.ReactiveProperty{T}"/>, <see cref="UniRx.ReactiveOperation{T,TR}"/>
+    ///     Mediator for <see cref="UniRx.ReactiveCommand" />, <see cref="UniRx.ReactiveProperty{T}" />,
+    ///     <see cref="UniRx.ReactiveOperation{T,TR}" />
     /// </summary>
     /// <typeparam name="T0">Type of inherited contract</typeparam>
     public abstract class RContract<T0> : RContract where T0 : RContract<T0>, new() {
@@ -101,28 +100,29 @@ namespace Red {
         }
 
         /// <summary>
-        /// Special constructor for creating non-gameObject contracts. Also for static types.
+        ///     Special constructor for creating non-gameObject contracts. Also for static types.
         /// </summary>
         /// <param name="target"></param>
         public RContract([CanBeNull] object target) {
             this.Target = target;
-            
+
             this.PreInitialize();
             this.Initialize();
-            
         }
-        
+      
         protected override void PreInitialize() {
             base.PreInitialize();
-            Contracts.Add((T0) this);
+            RContract<T0>.Contracts.Add((T0) this);
+  
             Disposable
-                .Create(() => Contracts.Remove((T0)this))
+                .Create(() => RContract<T0>.Contracts.Remove((T0) this))
                 .AddTo(this.Disposables);
         }
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or create it, if it doesn't exists for current object
-        /// <para/> For null target use cctor instead
+        ///     Return instance <see cref="RContract{T0}" /> or create it, if it doesn't exists for current object
+        ///     <para />
+        ///     For null target use cctor instead
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="obj">Usual type or null</param>
@@ -132,7 +132,7 @@ namespace Red {
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            var contract = TryGet(obj, identifier);
+            var contract = RContract<T0>.TryGet(obj, identifier);
             if (contract == null) {
                 contract = new T0 {
                     Target     = obj,
@@ -146,7 +146,7 @@ namespace Red {
         }
 
         /// <summary>
-        /// Return instance <see cref="RContract{T0}"/> or null if it doesn't exists for current object
+        ///     Return instance <see cref="RContract{T0}" /> or null if it doesn't exists for current object
         /// </summary>
         /// <typeparam name="T0">Type of contract</typeparam>
         /// <param name="obj">Usual type or null</param>
@@ -156,12 +156,14 @@ namespace Red {
             if (obj == null) {
                 throw new ArgumentNullException(nameof(obj));
             }
-            return Contracts.FirstOrDefault(c => c.Target == obj && c.Identifier == identifier);
+
+            return RContract<T0>.Contracts.FirstOrDefault(c => c.Target == obj && c.Identifier == identifier);
         }
 
         /// <summary>
-        /// Returns instance <see cref="RContract{T0}"/> or create it, if it doesn't exists for current object
-        /// <para/> For null target use cctor instead
+        ///     Returns instance <see cref="RContract{T0}" /> or create it, if it doesn't exists for current object
+        ///     <para />
+        ///     For null target use cctor instead
         /// </summary>
         /// <param name="identifier">Unique identifier for contract</param>
         /// <typeparam name="T1">Type of contract</typeparam>

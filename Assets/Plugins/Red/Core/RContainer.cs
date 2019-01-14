@@ -2,32 +2,35 @@
 namespace Red {
     using System;
     using System.Collections.Generic;
-    using JetBrains.Annotations;
     using UniRx;
 
     /// <inheritdoc />
     /// <summary>
-    /// Container for resolving global contract references.
+    ///     Container for resolving global contract references.
     /// </summary>
     public sealed class RContainer : IDisposable {
-        private readonly Dictionary<Type, RContract> contracts = new Dictionary<Type, RContract>();
-        private readonly Subject<RContract> newContract = new Subject<RContract>();
+        private readonly Dictionary<Type, RContract> contracts   = new Dictionary<Type, RContract>();
+        private readonly Subject<RContract>          newContract = new Subject<RContract>();
 
         /// <summary>
-        /// Registrate contract in single instance.
-        /// If contract exist throw <see cref="InvalidOperationException"/>
+        ///     Registrate contract in single instance.
+        ///     If contract exist throw <see cref="InvalidOperationException" />
         /// </summary>
         /// <param name="contract">Instance contract for registration</param>
-        /// <returns>Return <see cref="IDisposable"/> for unscribing</returns>
+        /// <returns>Return <see cref="IDisposable" /> for unscribing</returns>
         public IDisposable Register(RContract contract) {
-            if (contract == null) throw new ArgumentNullException(nameof(contract));
-            
+            if (contract == null) {
+                throw new ArgumentNullException(nameof(contract));
+            }
+
             return this.RegisterLocal(contract, contract.GetType());
         }
 
         private IDisposable RegisterLocal(RContract contract, Type type) {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-            
+            if (type == null) {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             if (!this.contracts.ContainsKey(type) && !this.contracts.ContainsValue(contract)) {
                 this.contracts.Add(type, contract);
                 this.newContract.OnNext(contract);
@@ -44,10 +47,10 @@ namespace Red {
         }
 
         /// <summary>
-        /// Resolve contract <typeparamref name="T"/> synchronously.
+        ///     Resolve contract <typeparamref name="T" /> synchronously.
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
-        /// <returns>Instance of <typeparamref name="T"/> or null</returns>
+        /// <returns>Instance of <typeparamref name="T" /> or null</returns>
         public T Resolve<T>() where T : RContract {
             if (this.contracts.TryGetValue(typeof(T), out var contract)) {
                 return (T) contract;
@@ -57,8 +60,8 @@ namespace Red {
         }
 
         /// <summary>
-        /// Resolve contact <typeparamref name="T"/> asynchronously. 
-        /// Waiting for contract if contract doesn't exist.
+        ///     Resolve contact <typeparamref name="T" /> asynchronously.
+        ///     Waiting for contract if contract doesn't exist.
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         public IObservable<T> ResolveAsync<T>() where T : RContract {
@@ -79,8 +82,9 @@ namespace Red {
         }
 
         /// <summary>
-        /// Stream contracts with <typeparamref name="T"/>.
-        /// <para/>Doesn't work with async\await cause never calling OnComplete().
+        ///     Stream contracts with <typeparamref name="T" />.
+        ///     <para />
+        ///     Doesn't work with async\await cause never calling OnComplete().
         /// </summary>
         /// <typeparam name="T">Type of contract</typeparam>
         public IObservable<T> ResolveStream<T>() where T : RContract {
@@ -96,7 +100,7 @@ namespace Red {
         }
 
         /// <summary>
-        /// Clear contracts list without locking container
+        ///     Clear contracts list without locking container
         /// </summary>
         public void Dispose() {
             this.contracts.Clear();
