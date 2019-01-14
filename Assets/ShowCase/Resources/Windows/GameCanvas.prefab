@@ -651,8 +651,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   canvasGroup: {fileID: 225229285694866284}
   contents: {fileID: 224419134503065602}
-  closeOnAwake: 1
-  disableContentOnClose: 1
+  closeOnAwake: 0
+  disableContentOnClose: 0
 --- !u!222 &222021295167690486
 CanvasRenderer:
   m_ObjectHideFlags: 1
