@@ -103,8 +103,10 @@ namespace Red {
         ///     Special constructor for creating non-gameObject contracts. Also for static types.
         /// </summary>
         /// <param name="target"></param>
-        public RContract([CanBeNull] object target) {
+        /// <param name="identifier">Unique identifier for contract</param>
+        public RContract([CanBeNull] object target, string identifier = "") {
             this.Target = target;
+            this.Identifier = identifier;
 
             this.PreInitialize();
             this.Initialize();
