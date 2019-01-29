@@ -87,7 +87,7 @@ namespace Red.Editor {
             else {
                 RContract.AllContracts
                     .ObserveAdd()
-                    .Where(p => p.Key == this.target)
+                    .Where(p => ReferenceEquals(p.Key, this.target))
                     .SelectMany(p => p.Value.ObserveAdd().Select(a => a.Value))
                     .Subscribe(CreateView);
             }
