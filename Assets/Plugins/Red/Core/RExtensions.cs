@@ -138,6 +138,15 @@ namespace Red {
             disposable.Dispose();
             return disposable;
         }
+
+        public static IObservable<TR> Systemize<T, TR>(this IObservable<T> observable, ISystem<T, TR> system) {
+            observable.Subscribe(system);
+            return system;
+        }
+
+        public static IObservable<TR> Systemize<TSystem, T, TR>(this IObservable<T> observable)
+            where TSystem : ISystem<T, TR>, new() => observable.Systemize(new TSystem());
+
     }
 }
 
