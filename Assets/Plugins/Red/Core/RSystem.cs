@@ -3,13 +3,12 @@ namespace Red {
     using JetBrains.Annotations;
     using UniRx;
 
-    public interface ISystem<in T,out TR> : IObserver<T>, IObservable<TR> {
-        
+    public interface ISystem<in T, out TR> : IObserver<T>, IObservable<TR> {
     }
 
     public abstract class RSystem<T, TR> : ISystem<T, TR> {
-        protected Subject<TR> Subject = new Subject<TR>();
-        
+        private Subject<TR> Subject = new Subject<TR>();
+
         public virtual void OnCompleted() {
             this.Subject.OnCompleted();
         }
@@ -19,6 +18,12 @@ namespace Red {
         }
 
         public abstract void OnNext(T value);
+
+        protected void Next(TR value) => this.Subject.OnNext(value);
+
+        protected void Error(Exception e) => this.Subject.OnError(e);
+
+        protected void Complete() => this.Subject.OnCompleted();
 
         public IDisposable Subscribe(IObserver<TR> observer) {
             return this.Subject.Subscribe(observer);

@@ -144,9 +144,9 @@ namespace Red {
             return system;
         }
 
-        public static IObservable<TR> Systemize<TSystem, T, TR>(this IObservable<T> observable)
-            where TSystem : ISystem<T, TR>, new() => observable.Systemize(new TSystem());
-
+        public static IObservable<TR> Do<T, TR>(this IObservable<T> observable, IObserver<TR> observer,
+            Func<T, TR> selector) =>
+            observable.Select(selector).Do(observer);
     }
 }
 
