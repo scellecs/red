@@ -112,7 +112,7 @@ namespace Red {
         }
     }
 
-    public static class RExtensions {
+    public static partial class RExtensions {
         /// <summary>
         ///     Awaiter for TimeSpan.
         /// </summary>
