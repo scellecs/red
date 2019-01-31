@@ -170,7 +170,9 @@ namespace Red {
             }
 
             protected override IDisposable SubscribeCore(IObserver<TR> observer, IDisposable cancel) {
-                return this.source.Subscribe(new Systemize(this, observer, cancel));
+                var observerOperator = new Systemize(this, observer, cancel);
+                return new CompositeDisposable(observerOperator.SubscribeSystem(),
+                    this.source.Subscribe(observerOperator));
             }
 
             private class Systemize : OperatorObserverBase<T, TR> {
@@ -179,7 +181,10 @@ namespace Red {
                 public Systemize(SystemizeObservable<T, TR> parent, IObserver<TR> observer, IDisposable cancel)
                     : base(observer, cancel) {
                     this.parent = parent;
-                    this.parent.system.Subscribe(observer);
+                }
+
+                public IDisposable SubscribeSystem() {
+                    return this.parent.system.Subscribe(this.observer);
                 }
 
                 public override void OnNext(T value) {
