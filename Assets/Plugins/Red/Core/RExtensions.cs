@@ -2,6 +2,8 @@
 namespace Red {
     using System;
     using System.Collections.Generic;
+    using UniRx;
+    using UniRx.Operators;
     using JetBrains.Annotations;
     using UniRx;
     using UniRx.Async;
@@ -18,7 +20,7 @@ namespace Red {
         public static T TryGet<T>(this Component component, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(component.gameObject, identifier);
         }
-        
+
         /// <summary>
         ///     Return instance <see cref="RContract{T0}" /> or null if it doesn't exists for current object
         /// </summary>
@@ -29,7 +31,7 @@ namespace Red {
         public static T TryGet<T>(this GameObject gameObject, string identifier = "") where T : RContract<T>, new() {
             return RContract<T>.TryGet(gameObject, identifier);
         }
-        
+
         /// <summary>
         ///     Search for the instance of <see cref="RContract{T0}" />
         /// </summary>
@@ -38,11 +40,12 @@ namespace Red {
         /// <param name="contract">Instance of <see cref="RContract{T0}" /> or null</param>
         /// <param name="identifier">Unique identifier for contract</param>
         /// <returns>True if found, false if instance is null</returns>
-        public static bool TryGet<T>(this GameObject gameObject, [CanBeNull] out T contract, string identifier = "") where T : RContract<T>, new() {
+        public static bool TryGet<T>(this GameObject gameObject, [CanBeNull] out T contract, string identifier = "")
+            where T : RContract<T>, new() {
             contract = RContract<T>.TryGet(gameObject, identifier);
             return contract != null;
-        }        
-        
+        }
+
         /// <summary>
         ///     Search for the instance of <see cref="RContract{T0}" />
         /// </summary>
@@ -51,7 +54,8 @@ namespace Red {
         /// <param name="contract">Instance of <see cref="RContract{T0}" /> or null</param>
         /// <param name="identifier">Unique identifier for contract</param>
         /// <returns>True if found, false if instance is null</returns>
-        public static bool TryGet<T>(this Component component, [CanBeNull] out T contract, string identifier = "") where T : RContract<T>, new() {
+        public static bool TryGet<T>(this Component component, [CanBeNull] out T contract, string identifier = "")
+            where T : RContract<T>, new() {
             contract = RContract<T>.TryGet(component.gameObject, identifier);
             return contract != null;
         }
@@ -140,13 +144,77 @@ namespace Red {
         }
 
         public static IObservable<TR> Systemize<T, TR>(this IObservable<T> observable, ISystem<T, TR> system) {
-            observable.Subscribe(system);
-            return system;
+            return new SystemizeObservable<T, TR>(observable, system);
+        }
+
+
+        public static IObservable<TR> Systemize<T1, T2, TR>(this IObservable<T1> observable, ISystem<T2, TR> system,
+            Func<T1, T2> selector) {
+            return new SystemizeObservable<T2, TR>(observable.Select(selector), system);
         }
 
         public static IObservable<TR> Do<T, TR>(this IObservable<T> observable, IObserver<TR> observer,
-            Func<T, TR> selector) =>
-            observable.Select(selector).Do(observer);
+            Func<T, TR> selector) {
+            return observable.Select(selector).Do(observer);
+        }
+
+
+        internal class SystemizeObservable<T, TR> : OperatorObservableBase<TR> {
+            private readonly IObservable<T> source;
+            private readonly ISystem<T, TR> system;
+
+            public SystemizeObservable(IObservable<T> source, ISystem<T, TR> system)
+                : base(source.IsRequiredSubscribeOnCurrentThread()) {
+                this.source = source;
+                this.system = system;
+            }
+
+            protected override IDisposable SubscribeCore(IObserver<TR> observer, IDisposable cancel) {
+                return this.source.Subscribe(new Systemize(this, observer, cancel));
+            }
+
+            private class Systemize : OperatorObserverBase<T, TR> {
+                private readonly SystemizeObservable<T, TR> parent;
+
+                public Systemize(SystemizeObservable<T, TR> parent, IObserver<TR> observer, IDisposable cancel)
+                    : base(observer, cancel) {
+                    this.parent = parent;
+                    this.parent.system.Subscribe(observer);
+                }
+
+                public override void OnNext(T value) {
+                    try {
+                        this.parent.system.OnNext(value);
+                    }
+                    catch (Exception ex) {
+                        try {
+                            this.observer.OnError(ex);
+                        }
+                        finally {
+                            this.Dispose();
+                        }
+                    }
+                }
+
+                public override void OnError(Exception error) {
+                    try {
+                        this.parent.system.OnError(error);
+                    }
+                    finally {
+                        this.Dispose();
+                    }
+                }
+
+                public override void OnCompleted() {
+                    try {
+                        this.parent.system.OnCompleted();
+                    }
+                    finally {
+                        this.Dispose();
+                    }
+                }
+            }
+        }
     }
 }
 
