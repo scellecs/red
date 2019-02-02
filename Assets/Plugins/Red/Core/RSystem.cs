@@ -7,26 +7,26 @@ namespace Red {
     }
 
     public abstract class RSystem<T, TR> : ISystem<T, TR> {
-        private Subject<TR> Subject = new Subject<TR>();
+        private readonly Subject<TR> subject = new Subject<TR>();
 
         public virtual void OnCompleted() {
-            this.Subject.OnCompleted();
+            this.subject.OnCompleted();
         }
 
         public virtual void OnError(Exception error) {
-            this.Subject.OnError(error);
+            this.subject.OnError(error);
         }
 
         public abstract void OnNext(T value);
 
-        protected void Next(TR value) => this.Subject.OnNext(value);
+        protected void Next(TR value) => this.subject.OnNext(value);
 
-        protected void Error(Exception e) => this.Subject.OnError(e);
+        protected void Error(Exception e) => this.subject.OnError(e);
 
-        protected void Complete() => this.Subject.OnCompleted();
+        protected void Complete() => this.subject.OnCompleted();
 
         public IDisposable Subscribe(IObserver<TR> observer) {
-            return this.Subject.Subscribe(observer);
+            return this.subject.Subscribe(observer);
         }
     }
 }
