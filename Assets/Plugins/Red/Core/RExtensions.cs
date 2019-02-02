@@ -5,7 +5,6 @@ namespace Red {
     using UniRx;
     using UniRx.Operators;
     using JetBrains.Annotations;
-    using UniRx;
     using UniRx.Async;
     using UnityEngine;
 
