@@ -159,7 +159,7 @@ namespace Red {
         }
 
 
-        internal class SystemizeObservable<T, TR> : OperatorObservableBase<TR> {
+        private class SystemizeObservable<T, TR> : OperatorObservableBase<TR> {
             private readonly IObservable<T> source;
             private readonly ISystem<T, TR> system;
 
