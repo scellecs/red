@@ -5,48 +5,15 @@ namespace Red {
     using UniRx;
     using UnityEngine;
 
-    public class ManualScheduler : IScheduler {
+    public class ManualScheduler : IScheduler, ISchedulerQueueing {
         public DateTimeOffset Now => Scheduler.Now;
-        private List<(DateTimeOffset time, Action action, BooleanDisposable d)> list
-            = new List<(DateTimeOffset time, Action action, BooleanDisposable d)>();
-
-        private readonly Action<object> scheduleAction;
-
-        public ManualScheduler() {
-            this.scheduleAction = this.Schedule;
-        }
-
-        private void Schedule(object state) {
-            var t = ((Action action, BooleanDisposable d)) state;
-            if (!t.d.IsDisposed) {
-                t.action();
-            }
-        }
-
-        public IDisposable Schedule(Action action) {
-            var temp = (DateTimeOffset.MinValue, action, new BooleanDisposable());
-            this.list.Add(temp);
-            return new CompositeDisposable(Disposable.Create(() => this.list.Remove(temp)), temp.Item3);
-        }
-
-        public IDisposable Schedule(TimeSpan dueTime, Action action) {
-            var time = Scheduler.Normalize(dueTime);
-            var temp = (this.Now.Add(time), action, new BooleanDisposable());
-            this.list.Add(temp);
-            return new CompositeDisposable(Disposable.Create(() => this.list.Remove(temp)), temp.Item3);
-        }
-
-        public void Publish() {
-            this.list.Where(i => i.time <= this.Now)
-                .ForEach(i => MainThreadDispatcher.Post(this.scheduleAction, (i.action, i.d)));
-            this.list.RemoveAll(i => i.time <= this.Now);
-        }
-    }
-
-    public class ManualSchedulerNonAlloc : IScheduler, ISchedulerQueueing {
-        public DateTimeOffset Now => Scheduler.Now;
-        private List<(DateTimeOffset time, Action action)> list
+        protected List<(DateTimeOffset time, Action action)> list
             = new List<(DateTimeOffset time, Action action)>();
+        protected readonly List<(DateTimeOffset time, Action action)> RemoveList
+            = new List<(DateTimeOffset time, Action action)>();
+
+        protected readonly List<IHelper> Helpers     = new List<IHelper>();
+        protected readonly List<IHelper> TempHelpers = new List<IHelper>();
 
         public IDisposable Schedule(Action action) {
             var temp = (DateTimeOffset.MinValue, action);
@@ -61,48 +28,43 @@ namespace Red {
             return null;
         }
 
-        private readonly List<(DateTimeOffset time, Action action)> removeList 
-            = new List<(DateTimeOffset time, Action action)>();
-
-        public void Publish() {
-            this.removeList.Clear();
+        public virtual void Publish() {
+            this.RemoveList.Clear();
 
             for (int i = 0; i < this.list.Count; i++) {
                 var item = this.list[i];
                 if (item.time <= this.Now) {
                     MainThreadDispatcher.UnsafeSend(item.action);
-                    this.removeList.Add(item);
+                    this.RemoveList.Add(item);
                 }
             }
 
-            this.removeList.ForEach(item => this.list.Remove(item));
-            
-            this.helpers.ForEach(h => h.Publish());
-            this.helpers.AddRange(this.tempHelpers);
-            this.tempHelpers.Clear();
+            this.RemoveList.ForEach(item => this.list.Remove(item));
+
+            this.Helpers.ForEach(h => h.Publish());
+            this.Helpers.AddRange(this.TempHelpers);
+            this.TempHelpers.Clear();
         }
 
         public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action) {
             this.GetHelper<T>().Schedule(action, state);
         }
 
-        private readonly List<IHelper> helpers = new List<IHelper>();
-        private readonly List<IHelper> tempHelpers = new List<IHelper>();
-        private Helper<T> GetHelper<T>() {
-            var temp = this.helpers.FirstOrDefault(h => h is T);
+        protected Helper<T> GetHelper<T>() {
+            var temp = this.Helpers.FirstOrDefault(h => h is T);
             if (temp == null) {
                 temp = new Helper<T>();
-                this.tempHelpers.Add(temp);
+                this.TempHelpers.Add(temp);
             }
 
-            return (Helper<T>)temp;
+            return (Helper<T>) temp;
         }
 
-        private interface IHelper {
+        protected interface IHelper {
             void Publish();
         }
-        
-        private class Helper<T> : IHelper {
+
+        protected class Helper<T> : IHelper {
             private readonly List<(Action<T> action, T state)> list
                 = new List<(Action<T> action, T state)>();
 
@@ -118,6 +80,32 @@ namespace Red {
 
                 this.list.Clear();
             }
+        }
+    }
+
+    public class ManualSchedulerLocked : ManualScheduler {
+        private readonly List<(DateTimeOffset time, Action action)> temporaryList
+            = new List<(DateTimeOffset time, Action action)>();
+        
+        public override void Publish() {
+            this.RemoveList.Clear();
+            
+            this.temporaryList.Clear();
+            this.temporaryList.AddRange(this.list);
+
+            for (int i = 0; i < this.temporaryList.Count; i++) {
+                var item = this.temporaryList[i];
+                if (item.time <= this.Now) {
+                    MainThreadDispatcher.UnsafeSend(item.action);
+                    this.RemoveList.Add(item);
+                }
+            }
+
+            this.RemoveList.ForEach(item => this.list.Remove(item));
+
+            this.Helpers.ForEach(h => h.Publish());
+            this.Helpers.AddRange(this.TempHelpers);
+            this.TempHelpers.Clear();
         }
     }
 }
