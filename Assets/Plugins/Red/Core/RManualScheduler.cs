@@ -6,7 +6,7 @@ namespace Red {
     using UniRx;
     using UnityEngine;
 
-    public class ManualScheduler : IScheduler, ISchedulerQueueing {
+    public class RManualScheduler : IScheduler, ISchedulerQueueing {
         public DateTimeOffset Now => Scheduler.Now;
         protected readonly List<(DateTimeOffset time, Action action)> List
             = new List<(DateTimeOffset time, Action action)>();
@@ -84,7 +84,7 @@ namespace Red {
         }
     }
 
-    public class ManualSchedulerLocked : ManualScheduler {
+    public class RManualSchedulerLocked : RManualScheduler {
         private readonly List<(DateTimeOffset time, Action action)> temporaryList
             = new List<(DateTimeOffset time, Action action)>();
         
