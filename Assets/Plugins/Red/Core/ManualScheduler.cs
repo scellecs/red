@@ -8,7 +8,7 @@ namespace Red {
 
     public class ManualScheduler : IScheduler, ISchedulerQueueing {
         public DateTimeOffset Now => Scheduler.Now;
-        protected List<(DateTimeOffset time, Action action)> list
+        protected readonly List<(DateTimeOffset time, Action action)> List
             = new List<(DateTimeOffset time, Action action)>();
         protected readonly List<(DateTimeOffset time, Action action)> RemoveList
             = new List<(DateTimeOffset time, Action action)>();
@@ -18,29 +18,29 @@ namespace Red {
 
         public IDisposable Schedule(Action action) {
             var temp = (DateTimeOffset.MinValue, action);
-            this.list.Add(temp);
+            this.List.Add(temp);
             return null;
         }
 
         public IDisposable Schedule(TimeSpan dueTime, Action action) {
             var time = Scheduler.Normalize(dueTime);
             var temp = (this.Now.Add(time), action);
-            this.list.Add(temp);
+            this.List.Add(temp);
             return null;
         }
 
         public virtual void Publish() {
             this.RemoveList.Clear();
 
-            for (int i = 0; i < this.list.Count; i++) {
-                var item = this.list[i];
+            for (int i = 0; i < this.List.Count; i++) {
+                var item = this.List[i];
                 if (item.time <= this.Now) {
                     MainThreadDispatcher.UnsafeSend(item.action);
                     this.RemoveList.Add(item);
                 }
             }
 
-            this.RemoveList.ForEach(item => this.list.Remove(item));
+            this.RemoveList.ForEach(item => this.List.Remove(item));
 
             this.Helpers.ForEach(h => h.Publish());
             this.Helpers.AddRange(this.TempHelpers);
@@ -92,7 +92,7 @@ namespace Red {
             this.RemoveList.Clear();
             
             this.temporaryList.Clear();
-            this.temporaryList.AddRange(this.list);
+            this.temporaryList.AddRange(this.List);
 
             for (int i = 0; i < this.temporaryList.Count; i++) {
                 var item = this.temporaryList[i];
@@ -102,7 +102,7 @@ namespace Red {
                 }
             }
 
-            this.RemoveList.ForEach(item => this.list.Remove(item));
+            this.RemoveList.ForEach(item => this.List.Remove(item));
 
             this.Helpers.ForEach(h => h.Publish());
             this.Helpers.AddRange(this.TempHelpers);
