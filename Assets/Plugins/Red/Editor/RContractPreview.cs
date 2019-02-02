@@ -137,7 +137,7 @@ namespace Red.Editor {
         private float maxContentWidth  = 300;
         private float maxContentHeight = 80;
 
-        //don't touch this, idk how it's works
+        //don't touch this, idk how it works
         public override void OnPreviewGUI(Rect r, GUIStyle background) {
             this.scrollPosition = GUI.BeginScrollView(r, this.scrollPosition,
                 new Rect(0, 0, this.maxContentWidth, this.maxContentHeight));
