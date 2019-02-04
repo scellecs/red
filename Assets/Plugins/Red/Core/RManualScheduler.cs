@@ -14,7 +14,6 @@ namespace Red {
             = new List<(DateTimeOffset time, Action action)>();
 
         protected readonly List<IHelper> Helpers     = new List<IHelper>();
-        protected readonly List<IHelper> TempHelpers = new List<IHelper>();
 
         public IDisposable Schedule(Action action) {
             var temp = (DateTimeOffset.MinValue, action);
@@ -42,9 +41,10 @@ namespace Red {
 
             this.RemoveList.ForEach(item => this.List.Remove(item));
 
-            this.Helpers.ForEach(h => h.Publish());
-            this.Helpers.AddRange(this.TempHelpers);
-            this.TempHelpers.Clear();
+            for (int i = 0; i < this.Helpers.Count; i++) {
+                var helper = this.Helpers[i];
+                helper.Publish();
+            }
         }
 
         public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action) {
@@ -55,7 +55,7 @@ namespace Red {
             var temp = this.Helpers.FirstOrDefault(h => h is T);
             if (temp == null) {
                 temp = new Helper<T>();
-                this.TempHelpers.Add(temp);
+                this.Helpers.Add(temp);
             }
 
             return (Helper<T>) temp;
@@ -85,17 +85,13 @@ namespace Red {
     }
 
     public class RManualSchedulerLocked : RManualScheduler {
-        private readonly List<(DateTimeOffset time, Action action)> temporaryList
-            = new List<(DateTimeOffset time, Action action)>();
-        
+
         public override void Publish() {
             this.RemoveList.Clear();
-            
-            this.temporaryList.Clear();
-            this.temporaryList.AddRange(this.List);
 
-            for (int i = 0; i < this.temporaryList.Count; i++) {
-                var item = this.temporaryList[i];
+            var listCountLock = this.List.Count;
+            for (int i = 0; i < listCountLock; i++) {
+                var item = this.List[i];
                 if (item.time <= this.Now) {
                     MainThreadDispatcher.UnsafeSend(item.action);
                     this.RemoveList.Add(item);
@@ -104,9 +100,11 @@ namespace Red {
 
             this.RemoveList.ForEach(item => this.List.Remove(item));
 
-            this.Helpers.ForEach(h => h.Publish());
-            this.Helpers.AddRange(this.TempHelpers);
-            this.TempHelpers.Clear();
+            var helpersCountLock = this.Helpers.Count;
+            for (int i = 0; i < helpersCountLock; i++) {
+                var helper = this.Helpers[i];
+                helper.Publish();
+            }
         }
     }
 }
