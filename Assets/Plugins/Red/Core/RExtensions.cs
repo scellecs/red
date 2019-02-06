@@ -8,7 +8,7 @@ namespace Red {
     using UniRx.Async;
     using UnityEngine;
 
-    public static class RContractExtension {
+    public static partial class RContractExtension {
         /// <summary>
         ///     Return instance <see cref="RContract{T0}" /> or null if it doesn't exists for current object
         /// </summary>
@@ -89,7 +89,7 @@ namespace Red {
         }
     }
 
-    public static class RLinqExtension {
+    public static partial class RLinqExtension {
         /// <summary>
         ///     Default iteration in functional style.
         /// </summary>
@@ -142,16 +142,47 @@ namespace Red {
             return disposable;
         }
 
+        /// <summary>
+        ///     Complex operator, which allows process stream with custom <see cref="ISystem{T, TR}" />
+        /// </summary>
+        /// <param name="observable">Any Observable</param>
+        /// <param name="system">System which receive <typeparamref name="T" /> and push forward <typeparamref name="TR" /></param>
+        /// <typeparam name="T">Input type</typeparam>
+        /// <typeparam name="TR">Output type</typeparam>
+        /// <returns>New Operator Observable</returns>
         public static IObservable<TR> Systemize<T, TR>(this IObservable<T> observable, ISystem<T, TR> system) {
             return new SystemizeObservable<T, TR>(observable, system);
         }
 
 
+        /// <summary>
+        ///     Complex operator, which allows process stream with custom <see cref="ISystem{T, TR}" />
+        /// <para/>
+        ///     Selector will be called before system
+        /// </summary>
+        /// <param name="observable">Any Observable</param>
+        /// <param name="system">System which receive <typeparamref name="T2" /> and push forward <typeparamref name="TR" /></param>
+        /// <param name="selector">Selector</param>
+        /// <typeparam name="T1">Input type</typeparam>
+        /// <typeparam name="T2">Selected type</typeparam>
+        /// <typeparam name="TR">Output type</typeparam>
+        /// <returns>New Operator Observable</returns>
         public static IObservable<TR> Systemize<T1, T2, TR>(this IObservable<T1> observable, ISystem<T2, TR> system,
             Func<T1, T2> selector) {
             return new SystemizeObservable<T2, TR>(observable.Select(selector), system);
         }
 
+        /// <summary>
+        ///     Combined Operator Select with Do
+        /// <para/>
+        ///     Selector will be called first
+        /// </summary>
+        /// <param name="observable">Any Observable</param>
+        /// <param name="observer">Any Observer</param>
+        /// <param name="selector">Selector</param>
+        /// <typeparam name="T">Input type</typeparam>
+        /// <typeparam name="TR">Output type</typeparam>
+        /// <returns></returns>
         public static IObservable<TR> Do<T, TR>(this IObservable<T> observable, IObserver<TR> observer,
             Func<T, TR> selector) {
             return observable.Select(selector).Do(observer);
@@ -221,118 +252,5 @@ namespace Red {
         }
     }
 }
-
-
-namespace UniRx {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-
-    public interface IReactiveOperation<T, TR> : IObservable<IOperationContext<T, TR>> {
-        IObservable<TR> Execute(T parameter);
-    }
-
-    public interface IOperationContext<out T, in TR> : IObserver<TR> {
-        T Parameter { get; }
-    }
-
-    /// <summary>
-    ///     Utility class for <see cref="ReactiveOperation{T,TR}" />
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <typeparam name="TR"></typeparam>
-    public class OperationContext<T, TR> : IOperationContext<T, TR>, IObservable<TR> {
-        public T Parameter { get; }
-
-        private readonly Subject<TR>      subject;
-        private readonly Queue<TR>        queue;
-        private readonly Queue<Exception> queueExceptions;
-
-        private bool isComplete;
-        private int  countObservers;
-
-        public OperationContext(T parameter) {
-            this.Parameter = parameter;
-
-            this.subject         = new Subject<TR>();
-            this.queue           = new Queue<TR>();
-            this.queueExceptions = new Queue<Exception>();
-
-            this.isComplete     = false;
-            this.countObservers = 0;
-        }
-
-        public IDisposable Subscribe(IObserver<TR> observer) {
-            if (this.countObservers == 0) {
-                foreach (var value in this.queue) {
-                    observer.OnNext(value);
-                }
-
-                foreach (var exception in this.queueExceptions) {
-                    observer.OnError(exception);
-                }
-
-                if (this.isComplete) {
-                    observer.OnCompleted();
-                }
-
-                this.queue.Clear();
-                this.queueExceptions.Clear();
-            }
-
-            Interlocked.Increment(ref this.countObservers);
-            var decrement = Disposable.Create(() => { Interlocked.Decrement(ref this.countObservers); });
-
-            var subscription = this.subject.Subscribe(observer);
-
-            return new CompositeDisposable(subscription, decrement);
-        }
-
-        public void OnCompleted() {
-            this.isComplete = true;
-            this.subject.OnCompleted();
-        }
-
-        public void OnError(Exception error) {
-            if (this.countObservers == 0) {
-                this.queueExceptions.Enqueue(error);
-            }
-
-            this.subject.OnError(error);
-        }
-
-        public void OnNext(TR value) {
-            if (this.countObservers == 0) {
-                this.queue.Enqueue(value);
-            }
-
-            this.subject.OnNext(value);
-        }
-    }
-
-    /// <summary>
-    ///     Complex entity which returns Observable Operation at the moment execution
-    /// </summary>
-    /// <typeparam name="T">Input Type</typeparam>
-    /// <typeparam name="TR">Return Type</typeparam>
-    public class ReactiveOperation<T, TR> : IReactiveOperation<T, TR>, IDisposable {
-        private readonly Subject<OperationContext<T, TR>> trigger = new Subject<OperationContext<T, TR>>();
-
-        public IObservable<TR> Execute(T parameter) {
-            var operation = new OperationContext<T, TR>(parameter);
-            this.trigger.OnNext(operation);
-            return operation;
-        }
-
-        public IDisposable Subscribe(IObserver<IOperationContext<T, TR>> observer) {
-            return this.trigger.Subscribe(observer);
-        }
-
-        public void Dispose() {
-            this.trigger?.Dispose();
-        }
-    }
-}
-
 
 #endif

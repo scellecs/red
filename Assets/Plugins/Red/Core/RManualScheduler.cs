@@ -6,6 +6,13 @@ namespace Red {
     using UniRx;
     using UnityEngine;
 
+    /// <summary>
+    ///     Scheduler with manual publish all actions
+    /// <para/>
+    ///     All new actions inside <see cref="Publish" /> will add at the end of execution list
+    /// <para/>
+    ///     New actions will executed at current call <see cref="Publish" />
+    /// </summary>
     public class RManualScheduler : IScheduler, ISchedulerQueueing {
         public DateTimeOffset Now => Scheduler.Now;
         protected readonly List<(DateTimeOffset time, Action action)> List
@@ -47,9 +54,8 @@ namespace Red {
             }
         }
 
-        public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action) {
-            this.GetHelper<T>().Schedule(action, state);
-        }
+        public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action) 
+            => this.GetHelper<T>().Schedule(action, state);
 
         protected Helper<T> GetHelper<T>() {
             var temp = this.Helpers.FirstOrDefault(h => h is T);
@@ -69,9 +75,7 @@ namespace Red {
             private readonly List<(Action<T> action, T state)> list
                 = new List<(Action<T> action, T state)>();
 
-            public void Schedule(Action<T> action, T state) {
-                this.list.Add((action, state));
-            }
+            public void Schedule(Action<T> action, T state) => this.list.Add((action, state));
 
             public void Publish() {
                 for (int i = 0; i < this.list.Count; i++) {
@@ -84,6 +88,13 @@ namespace Red {
         }
     }
 
+    /// <summary>
+    ///     Scheduler with manual publish all actions
+    /// <para/>
+    ///     All new actions inside <see cref="Publish" /> will add at the end of execution list
+    /// <para/>
+    ///     New actions will executed at next call <see cref="Publish" />
+    /// </summary>
     public class RManualSchedulerLocked : RManualScheduler {
 
         public override void Publish() {
