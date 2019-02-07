@@ -159,7 +159,14 @@ namespace Red {
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            return RContract<T0>.Contracts.FirstOrDefault(c => c.Target == obj && c.Identifier == identifier);
+            for (var index = 0; index < RContract<T0>.Contracts.Count; index++) {
+                var c = RContract<T0>.Contracts[index];
+                if (c.Target == obj && c.Identifier == identifier) {
+                    return c;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
