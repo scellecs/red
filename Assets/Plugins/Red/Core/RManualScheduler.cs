@@ -58,7 +58,7 @@ namespace Red {
             => this.GetHelper<T>().Schedule(action, state);
 
         protected Helper<T> GetHelper<T>() {
-            var temp = this.Helpers.FirstOrDefault(h => h is T);
+            var temp = this.Helpers.FirstOrDefault(h => h is Helper<T>);
             if (temp == null) {
                 temp = new Helper<T>();
                 this.Helpers.Add(temp);
