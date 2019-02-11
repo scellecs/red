@@ -19,6 +19,7 @@ namespace UniRx {
     /// <typeparam name="TR"></typeparam>
     public class OperationContext<T, TR> : IOperationContext<T, TR>, IObservable<TR> {
         public T Parameter { get; }
+        public CancellationDisposable Cancellation { get; } = new CancellationDisposable();
 
         private readonly Subject<TR>      subject;
         private readonly Queue<TR>        queue;
@@ -61,7 +62,7 @@ namespace UniRx {
 
             var subscription = this.subject.Subscribe(observer);
 
-            return new CompositeDisposable(subscription, decrement);
+            return new CompositeDisposable(subscription, decrement, this.Cancellation);
         }
 
         public void OnCompleted() {
