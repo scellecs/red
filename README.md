@@ -7,6 +7,7 @@ Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing y
 
 - **Containers** solve local and global dependencies and make it possible to abandon static classes, singletons.  
 - **Contracts** make it easy to build MVP for UI and further interaction with business logic. 
+- **Systems** make it easy to build ECS-like business logic. 
 
 ## How to install
 
