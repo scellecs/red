@@ -1,0 +1,20 @@
+{
+    "name": "Red.Tests",
+    "references": [
+        "Red",
+        "UniRx",
+        "UniRx.Async"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

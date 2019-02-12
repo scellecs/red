@@ -12,7 +12,7 @@ namespace Red {
     /// </summary>
     public abstract class RContract : IDisposable {
 #if UNITY_EDITOR
-        internal static ReactiveDictionary<object, ReactiveCollection<RContract>> AllContracts 
+        public static ReactiveDictionary<object, ReactiveCollection<RContract>> AllContracts 
             = new ReactiveDictionary<object, ReactiveCollection<RContract>>();
 #endif
 
