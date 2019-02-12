@@ -18,7 +18,7 @@ namespace UniRx {
     /// <typeparam name="T"></typeparam>
     /// <typeparam name="TR"></typeparam>
     public class OperationContext<T, TR> : IOperationContext<T, TR>, IObservable<TR> {
-        public T Parameter { get; }
+        public T                      Parameter    { get; }
         public CancellationDisposable Cancellation { get; }
 
         private readonly Subject<TR>      subject;
@@ -29,7 +29,7 @@ namespace UniRx {
         private int  countObservers;
 
         public OperationContext(T parameter) {
-            this.Parameter = parameter;
+            this.Parameter    = parameter;
             this.Cancellation = new CancellationDisposable();
 
             this.subject         = new Subject<TR>();
