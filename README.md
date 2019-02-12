@@ -5,9 +5,15 @@ Toolchain based on Reactive Extensions for Unity Game Engine.
   
 Extends the capabilities of [UniRx](https://github.com/neuecc/UniRx), allowing you to conveniently resolve dependencies and implement loose coupling between components or modules of your architecture.  
 
-- **Containers** solve local and global dependencies and make it possible to abandon static classes, singletons.  
-- **Contracts** make it easy to build MVP for UI and further interaction with business logic. 
-- **Systems** make it easy to build ECS-like business logic. 
+There are two ways to build architecture/
+Simple with:
+- **Container** is Service Locator, which can solve global dependencies and make it possible to abandon static classes, singletons.  
+- **Contract** contains all reactive streams, and helps to make it easy to build MVP for UI and further interaction with business logic. 
+
+Pure way:
+- **DI** manual injections or use Zenject. 
+- **IntegrationRoot** integrates all systems with reactive streams. 
+- **Systems** ECS-like business logic. 
 
 ## How to install
 
