@@ -96,16 +96,31 @@ namespace UniRx {
     public class ReactiveOperation<T, TR> : IReactiveOperation<T, TR>, IDisposable {
         private readonly Subject<OperationContext<T, TR>> trigger = new Subject<OperationContext<T, TR>>();
 
+        
+        /// <summary>
+        ///     Push parameter and return IObservable{TR}
+        ///     <para/>23 allocations on call
+        /// </summary>
+        /// <param name="parameter"></param>
+        /// <returns></returns>
         public IObservable<TR> Execute(T parameter) {
             var operation = new OperationContext<T, TR>(parameter);
             this.trigger.OnNext(operation);
             return operation;
         }
 
+        /// <summary>
+        ///     <para/>18 allocations on call
+        /// </summary>
+        /// <param name="observer"></param>
+        /// <returns></returns>
         public IDisposable Subscribe(IObserver<IOperationContext<T, TR>> observer) {
             return this.trigger.Subscribe(observer);
         }
 
+        /// <summary>
+        ///     <para/>2 allocations on call
+        /// </summary>
         public void Dispose() {
             this.trigger?.Dispose();
         }

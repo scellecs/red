@@ -1,40 +1,74 @@
 ﻿namespace Red.Tests {
     using System;
-    using System.Collections.Generic;
     using Editor.TestTools;
-    using NSubstitute;
     using NUnit.Framework;
     using UniRx;
 
     public class ReactiveOperationTests {
+        private ReactiveOperation<Unit, Unit> reactiveOperation;
+
         [SetUp]
         public void Setup() {
+            this.reactiveOperation = new ReactiveOperation<Unit, Unit>();
         }
 
         [TearDown]
         public void TearDown() {
+            this.reactiveOperation.Dispose();
         }
-        [Test]
-        public void ReactiveOperation_Execute_NonAlloc() {
-            var reactiveOperation = new ReactiveOperation<Unit, Unit>();
-            var currentOperation = reactiveOperation.Execute(Unit.Default);
+
+        [Test(
+            Author      = "Oleg Morozov",
+            Description = "Execute produced 23 allocations",
+            TestOf      = typeof(ReactiveOperation<,>))]
+        [Category("Allocations")]
+        public void _0_ReactiveOperation_Execute_23Alloc() {
+            this.reactiveOperation.Subscribe(ctx => {
+                ctx.OnNext(Unit.Default);
+                ctx.OnCompleted();
+            });
 
             void ExecuteReactiveOperation() {
-                new List<object>(100) {
-                };
+                this.reactiveOperation.Execute(Unit.Default);
             }
-            
-            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(1));
+
+            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(23));
         }
 
-        [Test]
-        public void SettingAVariableDoesNotAllocate() {
-            void TestCase() {
-                int a = 0;
-                a = 1;
+        [Test(
+            Author      = "Oleg Morozov",
+            Description = "Subscribe produced 18 allocations",
+            TestOf      = typeof(ReactiveOperation<,>))]
+        [Category("Allocations")]
+        public void _1_ReactiveOperation_Subscribe_18Alloc() {
+            Action<IOperationContext<Unit, Unit>> action = ctx => {
+                ctx.OnNext(Unit.Default);
+                ctx.OnCompleted();
+            };
+
+            void ExecuteReactiveOperation() {
+                this.reactiveOperation.Subscribe(action);
             }
 
-            Assert.That(TestCase, new AllocatingCountGCMemoryConstraint(0));
+            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(18));
+        }
+
+        [Test(
+            Author      = "Oleg Morozov",
+            Description = "Dispose produced 2 allocations",
+            TestOf      = typeof(ReactiveOperation<,>))]
+        [Category("Allocations")]
+        public void _2_ReactiveOperation_Dispose_2Alloc() {
+            this.reactiveOperation.Subscribe(ctx => {
+                ctx.OnNext(Unit.Default);
+                ctx.OnCompleted();
+            });
+
+            void ExecuteReactiveOperation() {
+                this.reactiveOperation.Dispose();
+            }
+
+            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(2));
         }
     }
 }
