@@ -6,6 +6,13 @@ namespace Red {
     using UniRx;
     using UnityEngine;
 
+    //TODO implement ISchedulerPeriodic ISchedulerLongRunning
+    public interface IObservableScheduler : 
+        IObservable<Unit>,
+        IScheduler,
+        ISchedulerQueueing,
+        IDisposable { }
+
     /// <summary>
     ///     Scheduler with manual publish all actions
     /// <para/>
@@ -13,55 +20,70 @@ namespace Red {
     /// <para/>
     ///     New actions will executed at current call <see cref="Publish" />
     /// </summary>
-    public class RManualScheduler : IScheduler, ISchedulerQueueing {
+    public class RManualScheduler : IObservableScheduler {
         public DateTimeOffset Now => Scheduler.Now;
-        protected readonly List<(DateTimeOffset time, Action action)> List
+        protected readonly List<(DateTimeOffset time, Action action)> list
             = new List<(DateTimeOffset time, Action action)>();
-        protected readonly List<(DateTimeOffset time, Action action)> RemoveList
+        protected readonly List<(DateTimeOffset time, Action action)> removeList
             = new List<(DateTimeOffset time, Action action)>();
 
-        protected readonly List<IHelper> Helpers     = new List<IHelper>();
+        protected readonly List<IHelper> helpers = new List<IHelper>();
+        protected readonly Subject<Unit> subject = new Subject<Unit>();
+        protected bool isDisposed;
 
         public IDisposable Schedule(Action action) {
+            if (this.isDisposed) {
+                throw new ObjectDisposedException("Scheduler is disposed");
+            }
             var temp = (DateTimeOffset.MinValue, action);
-            this.List.Add(temp);
+            this.list.Add(temp);
             return null;
         }
 
         public IDisposable Schedule(TimeSpan dueTime, Action action) {
+            if (this.isDisposed) {
+                throw new ObjectDisposedException("Scheduler is disposed");
+            }
+            
             var time = Scheduler.Normalize(dueTime);
             var temp = (this.Now.Add(time), action);
-            this.List.Add(temp);
+            this.list.Add(temp);
             return null;
         }
 
         public virtual void Publish() {
-            this.RemoveList.Clear();
+            if (this.isDisposed) {
+                throw new ObjectDisposedException("Scheduler is disposed");
+            }
+            
+            this.subject.OnNext(Unit.Default);
 
-            for (int i = 0; i < this.List.Count; i++) {
-                var item = this.List[i];
+            this.removeList.Clear();
+
+            for (int i = 0; i < this.list.Count; i++) {
+                var item = this.list[i];
                 if (item.time <= this.Now) {
                     MainThreadDispatcher.UnsafeSend(item.action);
-                    this.RemoveList.Add(item);
+                    this.removeList.Add(item);
                 }
             }
 
-            this.RemoveList.ForEach(item => this.List.Remove(item));
+            this.removeList.ForEach(item => this.list.Remove(item));
 
-            for (int i = 0; i < this.Helpers.Count; i++) {
-                var helper = this.Helpers[i];
+            for (int i = 0; i < this.helpers.Count; i++) {
+                var helper = this.helpers[i];
                 helper.Publish();
             }
         }
 
-        public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action) 
+        public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action)
             => this.GetHelper<T>().Schedule(action, state);
 
         protected Helper<T> GetHelper<T>() {
-            var temp = this.Helpers.FirstOrDefault(h => h is Helper<T>);
+            var temp = this.helpers.FirstOrDefault(h => h is Helper<T>);
             if (temp == null) {
                 temp = new Helper<T>();
-                this.Helpers.Add(temp);
+                this.helpers.Add(temp);
             }
 
             return (Helper<T>) temp;
@@ -86,6 +108,18 @@ namespace Red {
                 this.list.Clear();
             }
         }
+
+        public IDisposable Subscribe(IObserver<Unit> observer)
+            => this.subject.Subscribe(observer);
+
+        public void Dispose() {
+            this.list.Clear();
+            this.removeList.Clear();
+            this.helpers.Clear();
+            this.subject.Dispose();
+
+            this.isDisposed = true;
+        }
     }
 
     /// <summary>
@@ -96,24 +130,29 @@ namespace Red {
     ///     New actions will executed at next call <see cref="Publish" />
     /// </summary>
     public class RManualSchedulerLocked : RManualScheduler {
-
         public override void Publish() {
-            this.RemoveList.Clear();
+            if (this.isDisposed) {
+                throw new ObjectDisposedException("Scheduler is disposed");
+            }
+            
+            this.subject.OnNext(Unit.Default);
 
-            var listCountLock = this.List.Count;
+            this.removeList.Clear();
+
+            var listCountLock = this.list.Count;
             for (int i = 0; i < listCountLock; i++) {
-                var item = this.List[i];
+                var item = this.list[i];
                 if (item.time <= this.Now) {
                     MainThreadDispatcher.UnsafeSend(item.action);
-                    this.RemoveList.Add(item);
+                    this.removeList.Add(item);
                 }
             }
 
-            this.RemoveList.ForEach(item => this.List.Remove(item));
+            this.removeList.ForEach(item => this.list.Remove(item));
 
-            var helpersCountLock = this.Helpers.Count;
+            var helpersCountLock = this.helpers.Count;
             for (int i = 0; i < helpersCountLock; i++) {
-                var helper = this.Helpers[i];
+                var helper = this.helpers[i];
                 helper.Publish();
             }
         }
