@@ -1,4 +1,5 @@
-﻿namespace Red.Tests {
+﻿#if (CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))) && UNITY_EDITOR
+namespace Red.Tests {
     using System;
     using Editor.TestTools;
     using NUnit.Framework;
@@ -72,3 +73,4 @@
         }
     }
 }
+#endif
