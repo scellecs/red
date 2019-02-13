@@ -1,12 +1,10 @@
 ﻿namespace Red.Tests {
     using System;
-    using System.Collections;
-    using NUnit.Framework;
-    using UnityEngine.TestTools;
+    using System.Collections.Generic;
+    using Editor.TestTools;
     using NSubstitute;
+    using NUnit.Framework;
     using UniRx;
-    using UnityEngine.TestTools.Constraints;
-    using UnityIs = UnityEngine.TestTools.Constraints.Is;
 
     public class ReactiveOperationTests {
         [SetUp]
@@ -16,17 +14,17 @@
         [TearDown]
         public void TearDown() {
         }
-
         [Test]
         public void ReactiveOperation_Execute_NonAlloc() {
             var reactiveOperation = new ReactiveOperation<Unit, Unit>();
             var currentOperation = reactiveOperation.Execute(Unit.Default);
 
             void ExecuteReactiveOperation() {
-                //currentOperation.;
+                new List<object>(100) {
+                };
             }
             
-            Assert.That(ExecuteReactiveOperation, UnityIs.Not.AllocatingGCMemory());
+            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(1));
         }
 
         [Test]
@@ -36,7 +34,7 @@
                 a = 1;
             }
 
-            Assert.That(TestCase, UnityIs.Not.AllocatingGCMemory());
+            Assert.That(TestCase, new AllocatingCountGCMemoryConstraint(0));
         }
     }
 }

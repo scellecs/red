@@ -5,7 +5,9 @@
         "UniRx",
         "UniRx.Async"
     ],
-    "optionalUnityReferences": [],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
     "includePlatforms": [
         "Editor"
     ],
