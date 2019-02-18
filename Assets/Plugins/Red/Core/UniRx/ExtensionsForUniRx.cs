@@ -2,9 +2,12 @@
 namespace UniRx {
     using System;
 
-    public static class ExtensionsForReactiveProperty {
+    public static class ExtensionsForUniRx {
         public static IDisposable Subscribe<T>(this IObservable<T> observable, IReactiveProperty<T> reactiveProperty)
             => observable.Subscribe(value => reactiveProperty.Value = value);
+
+        public static IObservable<T> WhereNotNull<T>(this IObservable<T> observable) where T : class
+            => observable.Where(v => v != null);
     }
 }
 #endif

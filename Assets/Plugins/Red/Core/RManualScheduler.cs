@@ -6,21 +6,26 @@ namespace Red {
     using UniRx;
     using UnityEngine;
 
+    public interface IManualObservableScheduler : IObservableScheduler {
+        
+        void Dispatch();
+    }
+    
     //TODO implement ISchedulerPeriodic ISchedulerLongRunning
-    public interface IObservableScheduler : 
+    public interface IObservableScheduler :
         IObservable<Unit>,
         IScheduler,
         ISchedulerQueueing,
-        IDisposable { }
+        IDisposable {
+    }
 
-    /// <summary>
     ///     Scheduler with manual publish all actions
     /// <para/>
-    ///     All new actions inside <see cref="Publish" /> will add at the end of execution list
+    ///     All new actions inside <see cref="Dispatch" /> will add at the end of execution list
     /// <para/>
-    ///     New actions will executed at current call <see cref="Publish" />
+    ///     New actions will executed at current call <see cref="Dispatch" />
     /// </summary>
-    public class RManualScheduler : IObservableScheduler {
+    public class RManualScheduler : IManualObservableScheduler {
         public DateTimeOffset Now => Scheduler.Now;
         protected readonly List<(DateTimeOffset time, Action action)> list
             = new List<(DateTimeOffset time, Action action)>();
@@ -51,7 +56,7 @@ namespace Red {
             return null;
         }
 
-        public virtual void Publish() {
+        public virtual void Dispatch() {
             if (this.isDisposed) {
                 throw new ObjectDisposedException("Scheduler is disposed");
             }
@@ -68,7 +73,10 @@ namespace Red {
                 }
             }
 
-            this.removeList.ForEach(item => this.list.Remove(item));
+            for (var i = 0; i < this.removeList.Count; i++) {
+                var item = this.removeList[i];
+                this.list.Remove(item);
+            }
 
             for (int i = 0; i < this.helpers.Count; i++) {
                 var helper = this.helpers[i];
@@ -80,7 +88,14 @@ namespace Red {
             => this.GetHelper<T>().Schedule(action, state);
 
         protected Helper<T> GetHelper<T>() {
-            var temp = this.helpers.FirstOrDefault(h => h is Helper<T>);
+            IHelper temp = null;
+            foreach (var h in this.helpers) {
+                if (h is Helper<T>) {
+                    temp = h;
+                    break;
+                }
+            }
+
             if (temp == null) {
                 temp = new Helper<T>();
                 this.helpers.Add(temp);
@@ -130,7 +145,7 @@ namespace Red {
     ///     New actions will executed at next call <see cref="Publish" />
     /// </summary>
     public class RManualSchedulerLocked : RManualScheduler {
-        public override void Publish() {
+        public override void Dispatch() {
             if (this.isDisposed) {
                 throw new ObjectDisposedException("Scheduler is disposed");
             }
@@ -148,7 +163,10 @@ namespace Red {
                 }
             }
 
-            this.removeList.ForEach(item => this.list.Remove(item));
+            for (var i = 0; i < this.removeList.Count; i++) {
+                var item = this.removeList[i];
+                this.list.Remove(item);
+            }
 
             var helpersCountLock = this.helpers.Count;
             for (int i = 0; i < helpersCountLock; i++) {
