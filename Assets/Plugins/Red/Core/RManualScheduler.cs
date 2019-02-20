@@ -2,9 +2,7 @@
 namespace Red {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using UniRx;
-    using UnityEngine;
 
     public interface IManualObservableScheduler : IObservableScheduler {
         
@@ -36,7 +34,7 @@ namespace Red {
         protected readonly Subject<Unit> subject = new Subject<Unit>();
         protected bool isDisposed;
 
-        public IDisposable Schedule(Action action) {
+        public virtual IDisposable Schedule(Action action) {
             if (this.isDisposed) {
                 throw new ObjectDisposedException("Scheduler is disposed");
             }
@@ -45,7 +43,7 @@ namespace Red {
             return null;
         }
 
-        public IDisposable Schedule(TimeSpan dueTime, Action action) {
+        public virtual IDisposable Schedule(TimeSpan dueTime, Action action) {
             if (this.isDisposed) {
                 throw new ObjectDisposedException("Scheduler is disposed");
             }
@@ -84,9 +82,22 @@ namespace Red {
             }
         }
 
-        public void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action)
+        public virtual void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action)
             => this.GetHelper<T>().Schedule(action, state);
 
+
+        public virtual IDisposable Subscribe(IObserver<Unit> observer)
+            => this.subject.Subscribe(observer);
+
+        public virtual void Dispose() {
+            this.list.Clear();
+            this.removeList.Clear();
+            this.helpers.Clear();
+            this.subject.Dispose();
+
+            this.isDisposed = true;
+        }
+        
         protected Helper<T> GetHelper<T>() {
             IHelper temp = null;
             foreach (var h in this.helpers) {
@@ -122,18 +133,6 @@ namespace Red {
 
                 this.list.Clear();
             }
-        }
-
-        public IDisposable Subscribe(IObserver<Unit> observer)
-            => this.subject.Subscribe(observer);
-
-        public void Dispose() {
-            this.list.Clear();
-            this.removeList.Clear();
-            this.helpers.Clear();
-            this.subject.Dispose();
-
-            this.isDisposed = true;
         }
     }
 
