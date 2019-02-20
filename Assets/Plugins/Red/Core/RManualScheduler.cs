@@ -17,6 +17,7 @@ namespace Red {
         IDisposable {
     }
 
+    /// <summary>
     ///     Scheduler with manual publish all actions
     /// <para/>
     ///     All new actions inside <see cref="Dispatch" /> will add at the end of execution list
