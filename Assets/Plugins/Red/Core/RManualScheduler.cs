@@ -24,6 +24,9 @@ namespace Red {
     /// <para/>
     ///     New actions will executed at current call <see cref="Dispatch" />
     /// </summary>
+#if ZENJECT
+    [Zenject.ZenjectAllowDuringValidation]
+#endif
     public class RManualScheduler : IManualObservableScheduler {
         public DateTimeOffset Now => Scheduler.Now;
         protected readonly List<(DateTimeOffset time, Action action)> list
@@ -146,6 +149,9 @@ namespace Red {
     /// <para/>
     ///     New actions will executed at next call <see cref="Publish" />
     /// </summary>
+#if ZENJECT
+    [Zenject.ZenjectAllowDuringValidation]
+#endif
     public class RManualSchedulerLocked : RManualScheduler {
         public override void Dispatch() {
             if (this.CanDispatch() == false) {
