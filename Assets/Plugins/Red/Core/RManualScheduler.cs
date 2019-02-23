@@ -5,7 +5,7 @@ namespace Red {
     using UniRx;
 
     public interface IManualObservableScheduler : IObservableScheduler {
-        
+        bool CanDispatch();
         void Dispatch();
     }
     
@@ -55,11 +55,13 @@ namespace Red {
             return null;
         }
 
+        public virtual bool CanDispatch() => !this.isDisposed;
+
         public virtual void Dispatch() {
-            if (this.isDisposed) {
-                throw new ObjectDisposedException("Scheduler is disposed");
+            if (this.CanDispatch() == false) {
+                return;
             }
-            
+
             this.subject.OnNext(Unit.Default);
 
             this.removeList.Clear();
@@ -146,8 +148,8 @@ namespace Red {
     /// </summary>
     public class RManualSchedulerLocked : RManualScheduler {
         public override void Dispatch() {
-            if (this.isDisposed) {
-                throw new ObjectDisposedException("Scheduler is disposed");
+            if (this.CanDispatch() == false) {
+                return;
             }
             
             this.subject.OnNext(Unit.Default);
