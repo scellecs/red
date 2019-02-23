@@ -29,8 +29,7 @@ namespace Red.Editor.TestTools {
                 recorder.CollectFromAllThreads();
             }
 
-            return new RAllocatingCountGCMemoryResult(this, original,
-                recorder.sampleBlockCount, this.maxLimit);
+            return new RAllocatingCountGCMemoryResult(this, original, recorder.sampleBlockCount, this.maxLimit);
         }
 
         public override ConstraintResult ApplyTo([NotNull] object obj) {

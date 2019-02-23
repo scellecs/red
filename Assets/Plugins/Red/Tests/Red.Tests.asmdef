@@ -17,7 +17,5 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "NSUBSTITUTE"
-    ]
+    "defineConstraints": []
 }
