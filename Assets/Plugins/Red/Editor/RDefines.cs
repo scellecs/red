@@ -3,6 +3,7 @@ namespace Red.Editor {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using UnityEditor;
     using UnityEngine;
 
@@ -16,9 +17,7 @@ namespace Red.Editor {
             ' '
         };
 
-        static RDefines() {
-            RDefines.UpdateDefineSymbols();
-        }
+        static RDefines() => RDefines.UpdateDefineSymbols();
 
         private static void UpdateDefineSymbols() {
             var target = EditorUserBuildSettings.selectedBuildTargetGroup;
@@ -27,7 +26,20 @@ namespace Red.Editor {
                 .Split(RDefines.DefineSeparators, StringSplitOptions.RemoveEmptyEntries);
             var newSymbols = new List<string>(symbols);
 
-            RDefines.Defines
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            var nsub = loadedAssemblies.FirstOrDefault(assembly => assembly.GetName().Name == "NSubstitute");
+            var zenject = loadedAssemblies.FirstOrDefault(assembly => assembly.GetName().Name == "zenject");
+
+            var defines = new List<string>(  RDefines.Defines);
+            if (nsub != null) {
+                defines.Add("NSUBSTITUTE");
+            }
+            if (zenject != null) {
+                
+                defines.Add("ZENJECT");
+            }
+            defines
                 .Where(def => newSymbols.Contains(def) == false)
                 .ForEach(def => {
                     newSymbols.Add(def);

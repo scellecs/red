@@ -528,7 +528,7 @@ PlayerSettings:
   webGLLinkerTarget: 1
   webGLThreadsSupport: 0
   scriptingDefineSymbols:
-    1: UNIRX;RED
+    1: UNIRX;RED;NSUBSTITUTE
   platformArchitecture: {}
   scriptingBackend: {}
   il2cppCompilerConfiguration: {}

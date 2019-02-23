@@ -1,4 +1,4 @@
-﻿#if (CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))) && UNITY_EDITOR
+﻿#if (CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))) && UNITY_EDITOR && NSUBSTITUTE
 namespace Red.Tests {
     using System;
     using Editor.TestTools;
@@ -33,7 +33,7 @@ namespace Red.Tests {
                 this.reactiveOperation.Execute(Unit.Default);
             }
 
-            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(23));
+            Assert.That(ExecuteReactiveOperation, new RAllocatingCountGCMemoryConstraint(23));
         }
 
         [Test(
@@ -51,7 +51,7 @@ namespace Red.Tests {
                 this.reactiveOperation.Subscribe(action);
             }
 
-            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(18));
+            Assert.That(ExecuteReactiveOperation, new RAllocatingCountGCMemoryConstraint(18));
         }
 
         [Test(
@@ -69,7 +69,7 @@ namespace Red.Tests {
                 this.reactiveOperation.Dispose();
             }
 
-            Assert.That(ExecuteReactiveOperation, new AllocatingCountGCMemoryConstraint(2));
+            Assert.That(ExecuteReactiveOperation, new RAllocatingCountGCMemoryConstraint(2));
         }
     }
 }

@@ -4,16 +4,15 @@ namespace Red.Editor.TestTools {
     using JetBrains.Annotations;
     using NUnit.Framework;
     using NUnit.Framework.Constraints;
-    using UnityEngine;
     using UnityEngine.Profiling;
 
     /// <summary>
     ///     <para>An NUnit test constraint class to test whether a given block of code makes GC allocations less than limit.</para>
     /// </summary>
-    public class AllocatingCountGCMemoryConstraint : Constraint {
+    public class RAllocatingCountGCMemoryConstraint : Constraint {
         private readonly int maxLimit;
 
-        public AllocatingCountGCMemoryConstraint(int maxLimit) {
+        public RAllocatingCountGCMemoryConstraint(int maxLimit) {
             this.maxLimit = maxLimit;
         }
 
@@ -29,8 +28,8 @@ namespace Red.Editor.TestTools {
                 recorder.enabled = false;
                 recorder.CollectFromAllThreads();
             }
-            
-            return new AllocatingCountGCMemoryResult(this, original, 
+
+            return new RAllocatingCountGCMemoryResult(this, original,
                 recorder.sampleBlockCount, this.maxLimit);
         }
 
@@ -59,11 +58,11 @@ namespace Red.Editor.TestTools {
 
         public override string Description => "allocates GC memory";
 
-        private class AllocatingCountGCMemoryResult : ConstraintResult {
+        private class RAllocatingCountGCMemoryResult : ConstraintResult {
             private readonly int diff;
             private readonly int limit;
 
-            public AllocatingCountGCMemoryResult(IConstraint constraint, object actualValue, int diff, int maxLimit)
+            public RAllocatingCountGCMemoryResult(IConstraint constraint, object actualValue, int diff, int maxLimit)
                 : base(constraint, actualValue, diff <= maxLimit) {
                 this.diff  = diff;
                 this.limit = maxLimit;
@@ -85,13 +84,10 @@ namespace Red.Editor.TestTools {
             }
         }
     }
-    
-    public static class ConstraintExtensions
-    {
-        public static AllocatingCountGCMemoryConstraint AllocatingCountGCMemory(
-            this ConstraintExpression chain, int maxLimit)
-        {
-            var memoryConstraint = new AllocatingCountGCMemoryConstraint(maxLimit);
+
+    public static class RConstraintExtensions {
+        public static RAllocatingCountGCMemoryConstraint AllocatingCountGCMemory(this ConstraintExpression chain, int maxLimit) {
+            var memoryConstraint = new RAllocatingCountGCMemoryConstraint(maxLimit);
             chain.Append(memoryConstraint);
             return memoryConstraint;
         }
