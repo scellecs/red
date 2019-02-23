@@ -7,12 +7,11 @@ namespace Red {
     }
 
     public interface IIntegrationBridge {
-        void Inject<T> (T originState) where T : IIntegrationState;
     }
 
     public interface IIntegrationState<in T> : IIntegrationState
         where T : IIntegrationBridge {
-        void Inject(T input);
+        void Inject(T bridge);
     }
 
     public interface IIntegrationRoot<in TC, in TS>
