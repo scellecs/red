@@ -9,7 +9,11 @@ namespace Red.Editor {
 
     [InitializeOnLoad]
     public class RDefines {
-        private static readonly string[] Defines = {"UNIRX", "RED"};
+        private static readonly string[] DefaultDefines = {"UNIRX", "RED"};
+        private static readonly Dictionary<string, string> PossibleDefines = new Dictionary<string, string> {
+            ["NSubstitute"] = "NSUBSTITUTE", 
+            ["zenject"] = "ZENJECT"
+        };
 
         private static readonly char[] DefineSeparators = {
             ';',
@@ -26,19 +30,16 @@ namespace Red.Editor {
                 .Split(RDefines.DefineSeparators, StringSplitOptions.RemoveEmptyEntries);
             var newSymbols = new List<string>(symbols);
 
+            var defines = new List<string>(  RDefines.DefaultDefines);
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            var nsub = loadedAssemblies.FirstOrDefault(assembly => assembly.GetName().Name == "NSubstitute");
-            var zenject = loadedAssemblies.FirstOrDefault(assembly => assembly.GetName().Name == "zenject");
-
-            var defines = new List<string>(  RDefines.Defines);
-            if (nsub != null) {
-                defines.Add("NSUBSTITUTE");
-            }
-            if (zenject != null) {
-                
-                defines.Add("ZENJECT");
-            }
+            RDefines.PossibleDefines.ForEach(pair => {
+                var temp = loadedAssemblies.FirstOrDefault(assembly => assembly.GetName().Name == pair.Key);
+                if (temp != null) {
+                    defines.Add(pair.Value);
+                }
+            });
+            
             defines
                 .Where(def => newSymbols.Contains(def) == false)
                 .ForEach(def => {

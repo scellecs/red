@@ -1,11 +1,11 @@
-﻿#if (CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))) && UNITY_EDITOR && NSUBSTITUTE
+﻿#if (CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))) && UNITY_EDITOR
 namespace Red.Tests {
     using System;
     using Editor.TestTools;
     using NUnit.Framework;
     using UniRx;
 
-    public class ReactiveOperationTests {
+    public class RReactiveOperationTests {
         private ReactiveOperation<Unit, Unit> reactiveOperation;
 
         [SetUp]
