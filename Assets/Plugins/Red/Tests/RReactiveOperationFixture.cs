@@ -24,7 +24,7 @@ namespace Red.Tests {
             Description = "Execute produced 23 allocations",
             TestOf      = typeof(ReactiveOperation<,>))]
         [Category("Allocations")]
-        public void _0_ReactiveOperation_Execute_23Alloc() {
+        public void ReactiveOperation_Execute_23Alloc() {
             this.reactiveOperation.Subscribe(ctx => {
                 ctx.OnNext(Unit.Default);
                 ctx.OnCompleted();
@@ -42,7 +42,7 @@ namespace Red.Tests {
             Description = "Subscribe produced 18 allocations",
             TestOf      = typeof(ReactiveOperation<,>))]
         [Category("Allocations")]
-        public void _1_ReactiveOperation_Subscribe_18Alloc() {
+        public void ReactiveOperation_Subscribe_18Alloc() {
             Action<IOperationContext<Unit, Unit>> action = ctx => {
                 ctx.OnNext(Unit.Default);
                 ctx.OnCompleted();
@@ -60,7 +60,7 @@ namespace Red.Tests {
             Description = "Dispose produced 2 allocations",
             TestOf      = typeof(ReactiveOperation<,>))]
         [Category("Allocations")]
-        public void _2_ReactiveOperation_Dispose_2Alloc() {
+        public void ReactiveOperation_Dispose_2Alloc() {
             this.reactiveOperation.Subscribe(ctx => {
                 ctx.OnNext(Unit.Default);
                 ctx.OnCompleted();

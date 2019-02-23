@@ -99,10 +99,10 @@ namespace Red.Editor {
 
         private void InitializeGUIStyles() {
             Texture2D LoadTexture(string path) {
-                var temp = AssetDatabase.LoadAssetAtPath<Texture2D>(Paths.RedFolder + "Textures/" + path);
+                var temp = AssetDatabase.LoadAssetAtPath<Texture2D>(RPaths.RedFolder + "Textures/" + path);
                 if (temp == null) {
                     Debug.LogError($"[RED] Can't find texture for {nameof(RContractPreview)}. " +
-                                   $"Maybe you move Red folder at other path, then just change path in Paths.cs");
+                                   $"Maybe you move Red folder at other path, then just change path in RPaths.cs");
                 }
 
                 return temp;
@@ -270,23 +270,13 @@ namespace Red.Editor {
             return (ObserverProvider) createObserver.Invoke(null, new object[0]);
         }
 
-        public static ObserverProvider CreateObserver<T>() {
-            return new ObserverProvider<T>();
-        }
+        public static ObserverProvider CreateObserver<T>() => new ObserverProvider<T>();
     }
 
     public class ObserverProvider<T> : ObserverProvider, IObserver<T> {
-        public void OnCompleted() {
-            this.Complete.Execute();
-        }
-
-        public void OnError(Exception error) {
-            this.Error.Execute(error);
-        }
-
-        public void OnNext(T value) {
-            this.Value.Execute(value);
-        }
+        public void OnNext(T value) => this.Value.Execute(value);
+        public void OnError(Exception error) => this.Error.Execute(error);
+        public void OnCompleted() => this.Complete.Execute();
     }
 }
 #endif

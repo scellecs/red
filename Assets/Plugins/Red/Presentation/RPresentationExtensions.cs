@@ -4,7 +4,7 @@ namespace Red {
     using UniRx;
     using UnityEngine.UI;
 
-    public partial class RExtensions {
+    public static partial class RPresentationExtensions {
 		
         public static IDisposable Subscribe(this Button button)
         {

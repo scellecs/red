@@ -8,6 +8,14 @@ namespace UniRx {
 
         public static IObservable<T> WhereNotNull<T>(this IObservable<T> observable) where T : class
             => observable.Where(v => v != null);
+        
+        /// <summary>
+        ///     Awaiter for TimeSpan.
+        /// </summary>
+        /// <param name="timeSpan">Any TimeSpan</param>
+        /// <returns>Awaiter</returns>
+        public static AsyncSubject<long> GetAwaiter(this TimeSpan timeSpan) => 
+            Observable.Timer(timeSpan).GetAwaiter();
     }
 }
 #endif

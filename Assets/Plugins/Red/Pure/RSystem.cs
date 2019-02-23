@@ -1,7 +1,6 @@
 #if CSHARP_7_OR_LATER || (UNITY_2018_3_OR_NEWER && (NET_STANDARD_2_0 || NET_4_6))
-namespace Red {
+namespace Red.Pure {
     using System;
-    using JetBrains.Annotations;
     using UniRx;
 
     public interface ISystem<in T, out TR> : IObserver<T>, IObservable<TR> {
