@@ -5,7 +5,8 @@ namespace Red.Tests {
     using NUnit.Framework;
     using UniRx;
 
-    public class RReactiveOperationTests {
+    [TestFixture]
+    public class RReactiveOperationFixture {
         private ReactiveOperation<Unit, Unit> reactiveOperation;
 
         [SetUp]
