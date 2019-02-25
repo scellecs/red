@@ -34,6 +34,10 @@ Pure way:
 First of all, you should be well versed in Rx and specifically in [UniRx](https://github.com/neuecc/UniRx).  
 Learn this in detail if you still do not know it.  
 
+## Code of conduct
+
+[Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md)
+
 ## License
 
 Red is licensed under [MIT License](LICENSE).
