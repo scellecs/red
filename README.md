@@ -36,8 +36,8 @@ Learn this in detail if you still do not know it.
 
 ## Code of Conduct
 
-[Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+[Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## License
 
-[MIT License](LICENSE).
+[MIT License](LICENSE)
