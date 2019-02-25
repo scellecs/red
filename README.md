@@ -40,4 +40,4 @@ Learn this in detail if you still do not know it.
 
 ## License
 
-Red is licensed under [MIT License](LICENSE).
+[MIT License](LICENSE).
