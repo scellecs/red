@@ -19,7 +19,7 @@ Pure way:
 ## How to install
 
 - Go to [Releases](https://github.com/X-Crew/Red/releases) and download latest package.
-- If your Unity version is lower than 2018.3, open Player Settings in Unity project and change Scripting Runtime Version to `.Net 4.x Equivalent`.
+- If your Unity version is lower than 2018.3, open Player Settings in Unity project and change Scripting Runtime Version to `.Net 4.x Equivalent` and install CSharpLatest.unitypackage.
 - Import UniRx from [AssetStore](https://assetstore.unity.com/packages/tools/integration/unirx-reactive-extensions-for-unity-17276).
 - Import Red.
 
@@ -34,6 +34,10 @@ Pure way:
 First of all, you should be well versed in Rx and specifically in [UniRx](https://github.com/neuecc/UniRx).  
 Learn this in detail if you still do not know it.  
 
+## Code of Conduct
+
+[Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md)
+
 ## License
 
-Red is licensed under [MIT License](LICENSE).
+[MIT License](LICENSE)
