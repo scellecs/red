@@ -18,6 +18,34 @@ Pure way:
 
 ## How to install
 
+### Simple Installation
+- Add to your project manifiest by path UnityProject/Packages/manifiest.json `scopedRegistries` like this
+```json
+{
+  "dependencies": {
+  },
+  "scopedRegistries": [
+    {
+      "name": "Unity",
+      "url": "https://packages.unity.com",
+      "scopes": [
+        "com.unity"
+      ]
+    },
+    {
+      "name": "XCrew",
+      "url": "http://xcrew.dev",
+      "scopes": [
+        "com"
+      ]
+    }
+  ]
+}
+```
+- Open window Package Manager in Unity and install Red
+  
+
+### Manual Installation 
 - Go to [Releases](https://github.com/X-Crew/Red/releases) and download latest package.
 - If your Unity version is lower than 2018.3, open Player Settings in Unity project and change Scripting Runtime Version to `.Net 4.x Equivalent` and install CSharpLatest.unitypackage.
 - Import UniRx from [AssetStore](https://assetstore.unity.com/packages/tools/integration/unirx-reactive-extensions-for-unity-17276).
