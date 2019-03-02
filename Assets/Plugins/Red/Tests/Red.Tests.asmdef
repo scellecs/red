@@ -2,9 +2,9 @@
     "name": "Red.Tests",
     "references": [
         "Red",
-        "Red.Editor",
         "UniRx",
-        "UniRx.Async"
+        "UniRx.Async",
+        "Red.Editor.TestTools"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

@@ -1,11 +1,14 @@
 {
-    "name": "Red.Editor",
+    "name": "Red.Editor.TestTools",
     "references": [
         "Red",
         "UniRx",
-        "UniRx.Async"
+        "UniRx.Async",
+        "Red.Editor"
     ],
-    "optionalUnityReferences": [],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
     "includePlatforms": [
         "Editor"
     ],

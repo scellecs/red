@@ -99,29 +99,28 @@ namespace Red.Editor {
 
         private void InitializeGUIStyles() {
             Texture2D LoadTexture(string path) {
-                var temp = AssetDatabase.LoadAssetAtPath<Texture2D>(RPaths.RedFolder + "Textures/" + path);
+                var temp = Resources.Load<Texture2D>(path);
                 if (temp == null) {
-                    Debug.LogError($"[RED] Can't find texture for {nameof(RContractPreview)}. " +
-                                   $"Maybe you move Red folder at other path, then just change path in RPaths.cs");
+                    Debug.LogError($"[RED] Can't find texture for {nameof(RContractPreview)}.");
                 }
 
                 return temp;
             }
 
             if (redCircle == null) {
-                redCircle = LoadTexture("RedCirclesDark/32x32_r.png");
+                redCircle = LoadTexture("RedCirclesDark/32x32_r");
             }
 
             if (greenCircle == null) {
-                greenCircle = LoadTexture("RedCirclesDark/32x32_g.png");
+                greenCircle = LoadTexture("RedCirclesDark/32x32_g");
             }
 
             if (blueCircle == null) {
-                blueCircle = LoadTexture("RedCirclesDark/32x32_b.png");
+                blueCircle = LoadTexture("RedCirclesDark/32x32_b");
             }
 
             if (yellowCircle == null) {
-                yellowCircle = LoadTexture("RedCirclesDark/32x32_y.png");
+                yellowCircle = LoadTexture("RedCirclesDark/32x32_y");
             }
         }
 
@@ -131,7 +130,7 @@ namespace Red.Editor {
         }
 
         public override bool HasPreviewGUI() {
-            return true;
+            return this.contractsView != null && this.contractsView.Count > 0;
         }
 
         private float maxContentWidth  = 300;
