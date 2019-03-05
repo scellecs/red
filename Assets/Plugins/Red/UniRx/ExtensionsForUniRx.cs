@@ -10,7 +10,10 @@ namespace UniRx {
             => observable.Subscribe(value => reactiveCommand.Execute(value));
         
         public static IDisposable Do<T>(this IObservable<T> observable, IReactiveProperty<T> reactiveProperty)
-            => observable.Subscribe(value => reactiveProperty.Value = value);
+            => observable.Subscribe(value => reactiveProperty.Value = value);        
+            
+        public static IDisposable Do<T>(this IObservable<T> observable, IReactiveCommand<T> reactiveCommand)
+            => observable.Subscribe(value => reactiveCommand.Execute(value));
         
         public static IObservable<T> WhereNotNull<T>(this IObservable<T> observable) where T : class
             => observable.Where(v => v != null);        
