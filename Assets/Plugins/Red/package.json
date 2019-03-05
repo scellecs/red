@@ -1,20 +1,20 @@
 {
-    "name": "com.xcrew.red",
-    "author": "Oleg Morozov",
-    "displayName": "Red",
-    "description": "Toolchain based on Reactive Extensions for Unity Game Engine.\n\nExtends the capabilities of UniRx, allowing you to conveniently resolve dependencies and implement loose coupling between components or modules of your architecture.",
-    "unity": "2018.3",
-    "version": "1.1.1",
-    "keywords": [
-        "rx",
-        "unirx",
-		"red"
-    ],
-    "dependencies": {
-		"com.neuecc.unirx": "6.2.2"
-	},
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/X-Crew/Red.git"
-    }
+  "name": "com.xcrew.red",
+  "author": "Oleg Morozov",
+  "displayName": "Red",
+  "description": "Toolchain based on Reactive Extensions for Unity Game Engine.\n\nExtends the capabilities of UniRx, allowing you to conveniently resolve dependencies and implement loose coupling between components or modules of your architecture.",
+  "unity": "2018.3",
+  "version": "1.1.1",
+  "keywords": [
+    "rx",
+    "unirx",
+    "red"
+  ],
+  "dependencies": {
+    "com.neuecc.unirx": "6.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/X-Crew/Red.git"
+  }
 }
