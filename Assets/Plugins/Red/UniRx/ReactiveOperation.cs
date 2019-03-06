@@ -10,6 +10,8 @@ namespace UniRx {
 
     public interface IOperationContext<out T, in TR> : IObserver<TR> {
         T Parameter { get; }
+
+        CancellationDisposable Cancellation { get; }
     }
 
     /// <summary>
@@ -96,7 +98,7 @@ namespace UniRx {
     public class ReactiveOperation<T, TR> : IReactiveOperation<T, TR>, IDisposable {
         private readonly Subject<OperationContext<T, TR>> trigger = new Subject<OperationContext<T, TR>>();
 
-        
+
         /// <summary>
         ///     Push parameter and return IObservable{TR}
         ///     <para/>23 allocations on call
