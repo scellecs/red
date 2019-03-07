@@ -128,10 +128,10 @@ namespace Red.Tests {
 
         [Test(
             Author      = "Oleg Morozov",
-            Description = "Execute produced 23 allocations",
+            Description = "Execute produced 14 allocations",
             TestOf      = typeof(ReactiveOperation<,>))]
         [Category("Allocations")]
-        public void ReactiveOperation_Execute_23Alloc() {
+        public void ReactiveOperation_Execute_14Alloc() {
             this.reactiveOperation.Subscribe(ctx => {
                 ctx.OnNext(0f);
                 ctx.OnCompleted();
@@ -141,7 +141,7 @@ namespace Red.Tests {
                 this.reactiveOperation.Execute(0f);
             }
 
-            Assert.That(ExecuteReactiveOperation, new RAllocatingCountGCMemoryConstraint(23));
+            Assert.That(ExecuteReactiveOperation, new RAllocatingCountGCMemoryConstraint(14));
         }
 
         [Test(

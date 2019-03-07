@@ -24,9 +24,13 @@ namespace UniRx {
         public CancellationDisposable Cancellation { get; }
 
         private readonly Subject<TR>      subject;
-        private readonly Queue<TR>        queue;
-        private readonly Queue<Exception> queueExceptions;
 
+        private TR               singleResult;
+        private Queue<TR>        queue;
+        private Exception        singleException;
+        private Queue<Exception> queueExceptions;
+
+        private bool haveSingleResult;
         private bool isComplete;
         private int  countObservers;
 
@@ -35,29 +39,38 @@ namespace UniRx {
             this.Cancellation = new CancellationDisposable();
 
             this.subject         = new Subject<TR>();
-            this.queue           = new Queue<TR>();
-            this.queueExceptions = new Queue<Exception>();
 
-            this.isComplete     = false;
-            this.countObservers = 0;
+            this.haveSingleResult = false;
+            this.isComplete       = false;
+            this.countObservers   = 0;
         }
 
         public IDisposable Subscribe(IObserver<TR> observer) {
             if (this.countObservers == 0) {
-                foreach (var value in this.queue) {
-                    observer.OnNext(value);
+                if (queue != null) {
+                    foreach (var value in this.queue) {
+                        observer.OnNext(value);
+                    }
+                } else if (this.haveSingleResult) {
+                    observer.OnNext(this.singleResult);                    
                 }
 
-                foreach (var exception in this.queueExceptions) {
-                    observer.OnError(exception);
+                if (this.queueExceptions != null) {
+                    foreach (var exception in this.queueExceptions) {
+                        observer.OnError(exception);
+                    }
+                } else if (this.singleException != null) {
+                    observer.OnError(this.singleException);                    
                 }
 
                 if (this.isComplete) {
                     observer.OnCompleted();
                 }
 
-                this.queue.Clear();
-                this.queueExceptions.Clear();
+                this.queue?.Clear();
+                this.queueExceptions?.Clear();
+                this.haveSingleResult = false;
+                this.singleException = null;
             }
 
             Interlocked.Increment(ref this.countObservers);
@@ -75,7 +88,19 @@ namespace UniRx {
 
         public void OnError(Exception error) {
             if (this.countObservers == 0) {
-                this.queueExceptions.Enqueue(error);
+                if (this.queueExceptions != null) {
+                    this.queueExceptions.Enqueue(error);
+                }
+                else {
+                    if (this.singleException == null) {
+                        this.singleException = error;
+                    } else {
+                        this.queueExceptions = new Queue<Exception>();
+                        this.queueExceptions.Enqueue(singleException);
+                        this.queueExceptions.Enqueue(error);
+                        this.singleException = null;
+                    }
+                }
             }
 
             this.subject.OnError(error);
@@ -83,7 +108,21 @@ namespace UniRx {
 
         public void OnNext(TR value) {
             if (this.countObservers == 0) {
-                this.queue.Enqueue(value);
+                if (this.queue != null) {
+                    this.queue.Enqueue(value);
+                }
+                else {
+                    if (this.haveSingleResult == false) {
+                        this.singleResult = value;
+                        this.haveSingleResult = true;
+                    }
+                    else {
+                        this.queue = new Queue<TR>();
+                        this.queue.Enqueue(singleResult);
+                        this.queue.Enqueue(value);
+                        this.haveSingleResult = false;
+                    }
+                }
             }
 
             this.subject.OnNext(value);
