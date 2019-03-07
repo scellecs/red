@@ -25,12 +25,12 @@ namespace UniRx {
 
         private readonly Subject<TR>      subject;
 
-        private TR               singleResult;
-        private Queue<TR>        queue;
+        private TR               singleValue;
+        private Queue<TR>        queueValues;
         private Exception        singleException;
         private Queue<Exception> queueExceptions;
 
-        private bool haveSingleResult;
+        private bool haveSingleValue;
         private bool isComplete;
         private int  countObservers;
 
@@ -40,19 +40,19 @@ namespace UniRx {
 
             this.subject         = new Subject<TR>();
 
-            this.haveSingleResult = false;
+            this.haveSingleValue = false;
             this.isComplete       = false;
             this.countObservers   = 0;
         }
 
         public IDisposable Subscribe(IObserver<TR> observer) {
             if (this.countObservers == 0) {
-                if (queue != null) {
-                    foreach (var value in this.queue) {
+                if (queueValues != null) {
+                    foreach (var value in this.queueValues) {
                         observer.OnNext(value);
                     }
-                } else if (this.haveSingleResult) {
-                    observer.OnNext(this.singleResult);                    
+                } else if (this.haveSingleValue) {
+                    observer.OnNext(this.singleValue);                    
                 }
 
                 if (this.queueExceptions != null) {
@@ -67,9 +67,9 @@ namespace UniRx {
                     observer.OnCompleted();
                 }
 
-                this.queue?.Clear();
+                this.queueValues?.Clear();
                 this.queueExceptions?.Clear();
-                this.haveSingleResult = false;
+                this.haveSingleValue = false;
                 this.singleException = null;
             }
 
@@ -108,19 +108,19 @@ namespace UniRx {
 
         public void OnNext(TR value) {
             if (this.countObservers == 0) {
-                if (this.queue != null) {
-                    this.queue.Enqueue(value);
+                if (this.queueValues != null) {
+                    this.queueValues.Enqueue(value);
                 }
                 else {
-                    if (this.haveSingleResult == false) {
-                        this.singleResult = value;
-                        this.haveSingleResult = true;
+                    if (this.haveSingleValue == false) {
+                        this.singleValue = value;
+                        this.haveSingleValue = true;
                     }
                     else {
-                        this.queue = new Queue<TR>();
-                        this.queue.Enqueue(singleResult);
-                        this.queue.Enqueue(value);
-                        this.haveSingleResult = false;
+                        this.queueValues = new Queue<TR>();
+                        this.queueValues.Enqueue(singleValue);
+                        this.queueValues.Enqueue(value);
+                        this.haveSingleValue = false;
                     }
                 }
             }
@@ -140,7 +140,7 @@ namespace UniRx {
 
         /// <summary>
         ///     Push parameter and return IObservable{TR}
-        ///     <para/>23 allocations on call
+        ///     <para/>14 allocations on call
         /// </summary>
         /// <param name="parameter"></param>
         /// <returns></returns>
