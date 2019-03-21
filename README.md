@@ -1,5 +1,5 @@
 # Red
-<img align="right" width="160px" height="160px" src="Assets/Data/logo.png">
+<img align="right" width="160px" height="160px" src="Assets/Plugins/Red/Editor/Resources/logo.png">
 
 Toolchain based on Reactive Extensions for Unity Game Engine.
   
