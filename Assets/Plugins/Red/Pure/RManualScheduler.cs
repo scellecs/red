@@ -70,7 +70,6 @@ namespace Red.Pure {
                 this.subject.OnNext(Unit.Default);
             }
             catch (Exception e) {
-                Debug.LogException(e);
                 this.subject.OnError(e);
             }
 
@@ -184,7 +183,6 @@ namespace Red.Pure {
                 this.subject.OnNext(Unit.Default);
             }
             catch (Exception e) {
-                Debug.LogException(e);
                 this.subject.OnError(e);
             }
 
