@@ -3,6 +3,7 @@ namespace Red.Pure {
     using System;
     using System.Collections.Generic;
     using UniRx;
+    using UnityEngine;
 
     public interface IManualObservableScheduler : IObservableScheduler {
         bool CanDispatch();
@@ -65,7 +66,13 @@ namespace Red.Pure {
                 return;
             }
 
-            this.subject.OnNext(Unit.Default);
+            try {
+                this.subject.OnNext(Unit.Default);
+            }
+            catch (Exception e) {
+                Debug.LogException(e);
+                this.subject.OnError(e);
+            }
 
             this.removeList.Clear();
 
@@ -88,12 +95,22 @@ namespace Red.Pure {
             }
         }
 
-        public virtual void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action)
-            => this.GetHelper<T>().Schedule(action, state);
+        public virtual void ScheduleQueueing<T>(ICancelable cancel, T state, Action<T> action) {
+            if (this.isDisposed) {
+                throw new ObjectDisposedException("Scheduler is disposed");
+            }
+            
+            this.GetHelper<T>().Schedule(cancel, action, state);
+        }
 
 
-        public virtual IDisposable Subscribe(IObserver<Unit> observer)
-            => this.subject.Subscribe(observer);
+        public virtual IDisposable Subscribe(IObserver<Unit> observer) {
+            if (this.isDisposed) {
+                throw new ObjectDisposedException("Scheduler is disposed");
+            }
+            
+            return this.subject.Subscribe(observer);
+        }
 
         public virtual void Dispose() {
             this.list.Clear();
@@ -106,7 +123,8 @@ namespace Red.Pure {
         
         protected Helper<T> GetHelper<T>() {
             IHelper temp = null;
-            foreach (var h in this.helpers) {
+            for (var index = 0; index < this.helpers.Count; index++) {
+                var h = this.helpers[index];
                 if (h is Helper<T>) {
                     temp = h;
                     break;
@@ -126,14 +144,18 @@ namespace Red.Pure {
         }
 
         protected class Helper<T> : IHelper {
-            private readonly List<(Action<T> action, T state)> list
-                = new List<(Action<T> action, T state)>();
+            private readonly List<(ICancelable cancel, Action<T> action, T state)> list
+                = new List<(ICancelable cancel, Action<T> action, T state)>();
 
-            public void Schedule(Action<T> action, T state) => this.list.Add((action, state));
+            public void Schedule(ICancelable cancel, Action<T> action, T state) 
+                => this.list.Add((cancel, action, state));
 
             public void Publish() {
                 for (int i = 0; i < this.list.Count; i++) {
-                    var (action, state) = this.list[i];
+                    var (cancel, action, state) = this.list[i];
+                    if (cancel.IsDisposed) {
+                        continue;
+                    }
                     MainThreadDispatcher.UnsafeSend(action, state);
                 }
 
@@ -158,7 +180,13 @@ namespace Red.Pure {
                 return;
             }
             
-            this.subject.OnNext(Unit.Default);
+            try {
+                this.subject.OnNext(Unit.Default);
+            }
+            catch (Exception e) {
+                Debug.LogException(e);
+                this.subject.OnError(e);
+            }
 
             this.removeList.Clear();
 
