@@ -2,6 +2,7 @@
 namespace UniRx {
     using System;
     using System.Threading;
+    using Red;
 
     public static class ExtensionsForUniRx {
         public static IDisposable Subscribe<T>(this IObservable<T> observable, IReactiveProperty<T> reactiveProperty)
@@ -37,6 +38,11 @@ namespace UniRx {
         /// <returns>Awaiter</returns>
         public static AsyncSubject<long> GetAwaiter(this TimeSpan timeSpan, CancellationToken cancellationToken) => 
             Observable.Timer(timeSpan).GetAwaiter(cancellationToken);
+
+        public static IObservable<T> WatchOn<T>(this IObservable<T> observable, RContract contract, string name) {
+            contract.AdditionalObservables.Add(new RContract.AdditionalObservable {Name = name, Observable = observable});
+            return observable;
+        } 
     }
 }
 #endif

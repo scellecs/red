@@ -3,9 +3,12 @@ namespace Red.Editor {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using JetBrains.Annotations;
     using UniRx;
     using UnityEngine;
     using UnityEditor;
+    using UnityEditorInternal;
+    using UnityEngine.UIElements;
     using Object = UnityEngine.Object;
 
     [CustomPreview(typeof(GameObject))]
@@ -15,46 +18,89 @@ namespace Red.Editor {
         private static Texture blueCircle;
         private static Texture yellowCircle;
 
+        private static GUIStyle labelStyle;
+
         private class ContractView {
-            public string       Name;
-            public MemberView[] Members;
+            public string                               Name;
+            public MemberView[]                         Members;
+            public List<RContract.AdditionalObservable> AdditionalObservables;
+            public ReorderableList                      ReorderableList;
         }
 
         private class MemberView {
-            public string Name;
-            public string TypeName;
-            public object LastValue;
-            public bool   IsChanged;
-            public bool   IsCompleted;
-            public bool   IsErrors;
+            public string    Name;
+            public string    TypeName;
+            public object    LastValue;
+            public Exception Exception;
+            public bool      IsChanged;
+            public bool      IsCompleted;
+            public bool      IsErrors;
+            public Type      TypeOfValue;
         }
 
-        private ReactiveCollection<ContractView> contractsView = new ReactiveCollection<ContractView>();
-        private CompositeDisposable              disposables   = new CompositeDisposable();
+        private readonly ReactiveCollection<ContractView> contractsView = new ReactiveCollection<ContractView>();
+        private readonly CompositeDisposable              disposables   = new CompositeDisposable();
 
         private readonly GUIContent title = new GUIContent("Red Contracts");
 
+        private float maxContentHeight = 80;
 
-        public override void Initialize(Object[] targets) {
+        private ContractView currentContractView;
+
+        private List<Type> types = new List<Type> {
+            typeof(IObservable<>),
+//            typeof(ReactiveDictionary<,>),
+//            typeof(ReactiveCollection<>),
+        };
+
+        private Vector2 scrollPosition;
+
+        public override void Initialize([NotNull] Object[] targets) {
             this.InitializeGUIStyles();
 
             this.disposables.Clear();
 
             void CreateView(RContract contract) {
+                string GetFriendlyName(Type type) {
+                    var friendlyName = type.Name;
+                    if (!type.IsGenericType) {
+                        return friendlyName;
+                    }
+
+                    var iBacktick = friendlyName.IndexOf('`');
+                    if (iBacktick > 0) {
+                        friendlyName = friendlyName.Remove(iBacktick);
+                    }
+
+                    friendlyName += "<";
+                    var typeParameters = type.GetGenericArguments();
+                    for (var i = 0; i < typeParameters.Length; ++i) {
+                        var typeParamName = GetFriendlyName(typeParameters[i]);
+                        friendlyName += (i == 0 ? typeParamName : "," + typeParamName);
+                    }
+
+                    friendlyName += ">";
+
+                    return friendlyName;
+                }
+
                 var view = new ContractView {
-                    Name = contract.GetType().ToString()
+                    Name = contract.GetType().ToString(),
                 };
 
                 var members = this.GetAllMembers(contract);
                 view.Members = members
+                    .Concat(contract.AdditionalObservables.Select(ao => (ao.Name, ao.Observable)))
                     .Select(t => {
                         var type = t.Item2.GetType();
-                        var mv = new MemberView {
-                            Name = t.Item1, TypeName = type.ToString()
-                        };
+                        var mv   = new MemberView {Name = t.Item1, TypeName = GetFriendlyName(type)};
+
                         var args = type.FindCurrentGenericTypeImplementation(typeof(IObservable<>));
                         if (args != null && args.Length > 0) {
-                            var obs = ObserverProvider.CreateObserverByParameter(args[0]);
+                            var argType = args[0];
+                            mv.TypeOfValue = argType;
+
+                            var obs = ObserverProvider.CreateObserverByParameter(argType);
                             obs.Value.Subscribe(obj => {
                                 mv.LastValue = obj;
                                 mv.IsChanged = true;
@@ -64,19 +110,24 @@ namespace Red.Editor {
                                 mv.IsCompleted = true;
                                 EditorUtility.SetDirty(this.target);
                             }).AddTo(this.disposables);
-                            obs.Error.Subscribe(_ => {
-                                mv.IsErrors = true;
+                            obs.Error.Subscribe(e => {
+                                mv.Exception = e;
+                                mv.IsErrors  = true;
                                 EditorUtility.SetDirty(this.target);
                             }).AddTo(this.disposables);
+
                             var disposable =
                                 (IDisposable) type.GetMethod("Subscribe")?.Invoke(t.Item2, new object[] {obs});
                             disposable.AddTo(this.disposables);
                         }
 
                         return mv;
-                    })
-                    .ToArray();
+                    }).ToArray();
 
+                view.ReorderableList                     =  new ReorderableList(view.Members, typeof(MemberView), false, true, false, false);
+                view.ReorderableList.drawElementCallback += DrawElementCallback;
+                view.ReorderableList.drawHeaderCallback  += DrawHeaderCallback;
+                view.ReorderableList.onMouseUpCallback   += OnMouseUpCallback;
                 this.contractsView.Add(view);
             }
 
@@ -122,120 +173,117 @@ namespace Red.Editor {
             if (yellowCircle == null) {
                 yellowCircle = LoadTexture("RedCirclesDark/32x32_y");
             }
+
+            if (labelStyle == null) {
+                labelStyle = EditorStyles.label;
+
+                labelStyle.richText = true;
+            }
         }
 
 
-        public override GUIContent GetPreviewTitle() {
-            return this.title;
+        public override GUIContent GetPreviewTitle() => this.title;
+
+        public override bool HasPreviewGUI() => this.contractsView.Count > 0;
+
+        private void DrawHeaderCallback(Rect rect) {
+            GUI.Label(rect, new GUIContent(this.currentContractView.Name));
         }
 
-        public override bool HasPreviewGUI() {
-            return this.contractsView != null && this.contractsView.Count > 0;
-        }
-
-        private float maxContentWidth  = 300;
-        private float maxContentHeight = 80;
-
-        //don't touch this, idk how it works
-        public override void OnPreviewGUI(Rect r, GUIStyle background) {
-            this.scrollPosition = GUI.BeginScrollView(r, this.scrollPosition,
-                new Rect(0, 0, this.maxContentWidth, this.maxContentHeight));
-            r = new Rect(0, 0, this.maxContentWidth, this.maxContentHeight);
+        private void DrawElementCallback(Rect rect, int index, bool isActive, bool isFocused) {
             if (Event.current.type == EventType.Repaint) {
-                var offset     = new Vector2(140f, 16f);
-                var rectOffset = new RectOffset(-5, -5, -5, -5);
-                r = rectOffset.Add(r);
-                var x        = r.x + 10f;
-                var y        = r.y + 10f;
-                var position = new Rect(x, y, offset.x, offset.y);
+                var memberView = this.currentContractView.Members[index];
 
-                if (this.contractsView != null && this.contractsView.Count > 0) {
-                    var maxNameSize  = 1f;
-                    var maxValueSize = 40f;
-                    var maxTypeSize  = 40f;
-
-                    this.contractsView.ForEach(c => {
-                        GUI.Label(r, $"{c.Name}");
-                        r.x += 16f;
-                        var rt = r;
-
-                        c.Members.ForEach(m => {
-                            r.y += position.height;
-
-                            var textureRect = r;
-
-                            textureRect.width =  textureRect.height = 8f;
-                            textureRect.x     += 4;
-                            textureRect.y     += 4;
-                            var texture = redCircle;
-                            if (m.IsErrors) {
-                                texture = yellowCircle;
-                            }
-                            else if (m.IsCompleted) {
-                                texture = blueCircle;
-                            }
-                            else if (m.IsChanged) {
-                                texture     = greenCircle;
-                                m.IsChanged = false;
-                                EditorUtility.SetDirty(this.target);
-                            }
-
-                            GUI.DrawTexture(textureRect, texture);
-
-                            r.x += 16f;
-                            var s = background.CalcSize(new GUIContent($"{m.Name}"));
-                            maxNameSize = maxNameSize > s.x ? maxNameSize : s.x;
-                            GUI.Label(r, $"{m.Name}");
-                            r.x -= 16f;
-                        });
-                        r.y = rt.y;
-                        c.Members.ForEach(m => {
-                            r.y += position.height;
-                            r.x += 16f;
-                            var s = background.CalcSize(new GUIContent($"| {m.LastValue ?? "null"}"));
-                            maxValueSize =  maxValueSize > s.x ? maxValueSize : s.x;
-                            r.x          += maxNameSize;
-                            GUI.Label(r, $"| {m.LastValue ?? "null"}");
-                            r.x -= maxNameSize;
-                            r.x -= 16f;
-                        });
-
-                        r.y = rt.y;
-                        c.Members.ForEach(m => {
-                            r.y += position.height;
-                            r.x += 16f;
-                            var s = background.CalcSize(new GUIContent($"| {m.TypeName}"));
-                            maxTypeSize = maxTypeSize > s.x ? maxTypeSize : s.x;
-                            var ts = maxNameSize + maxValueSize;
-                            r.x += ts;
-                            GUI.Label(r, $"| {m.TypeName}");
-                            r.x -= ts;
-                            r.x -= 16f;
-                        });
-
-                        r.x -= 16f;
-                        r.y += position.height;
-                        GUI.Label(r, $"______________________________________________________________________________");
-                        r.y += 16f;
-                    });
-
-                    this.maxContentWidth  = 5 + 32 + maxNameSize + maxValueSize + maxTypeSize;
-                    this.maxContentHeight = r.y;
+                var status = "Idle";
+                
+                if (memberView.IsErrors) {
+                    status = "Errors";
                 }
-                else {
-                    GUI.Label(r, "There aren't any contracts.");
+                else if (memberView.IsCompleted) {
+                    status = "Completed";
                 }
+                else if (memberView.IsChanged) {
+                    status = "Changed";
+                }
+
+                rect.y += 2;
+
+                var textureRect = rect;
+
+                textureRect.width =  textureRect.height = 8f;
+                textureRect.x     += 4;
+                textureRect.y     += 4;
+                var texture = redCircle;
+                if (memberView.IsErrors) {
+                    texture = yellowCircle;
+                }
+                else if (memberView.IsCompleted) {
+                    texture = blueCircle;
+                }
+                else if (memberView.IsChanged) {
+                    texture              = greenCircle;
+                    memberView.IsChanged = false;
+                    EditorUtility.SetDirty(this.target);
+                }
+
+                GUI.DrawTexture(textureRect, texture);
+
+                rect.x += 16f;
+
+                var temp = new GUIContent($"Name: <b>{memberView.Name}</b> Value: <b>{memberView.LastValue}</b> Status: <i>{status}</i>");
+                GUI.Label(rect, temp, labelStyle);
+            }
+        }
+
+        private double lastTimeClick = 0;
+
+        private void OnMouseUpCallback(ReorderableList list) {
+            var memberView = this.currentContractView.Members[list.index];
+            if (memberView.IsErrors) {
+                if (EditorApplication.timeSinceStartup - this.lastTimeClick < 0.200) {
+                    Debug.LogException(memberView.Exception);
+                }
+            }
+            else {
+                if (memberView.TypeOfValue.InheritsOrImplements(typeof(Object))) {
+                    var value = (Object) memberView.LastValue;
+                    if (EditorApplication.timeSinceStartup - this.lastTimeClick < 0.200) {
+                        Selection.objects = new[] {value};
+                    }
+
+                    EditorGUIUtility.PingObject(value);
+                }
+            }
+
+            this.lastTimeClick = EditorApplication.timeSinceStartup;
+        }
+
+
+        public override void OnPreviewGUI(Rect r, GUIStyle background) {
+            var offsetWidth = 5;
+            if (this.maxContentHeight > r.yMax) {
+                offsetWidth = 18;
+            }
+
+            this.scrollPosition = GUI.BeginScrollView(r, this.scrollPosition, new Rect(0, 0, r.xMax - offsetWidth, this.maxContentHeight));
+            r                   = new Rect(0, 0, r.xMax - offsetWidth - 2, this.maxContentHeight);
+
+            if (this.contractsView.Count > 0) {
+                foreach (var contractView in this.contractsView) {
+                    this.currentContractView = contractView;
+
+                    contractView.ReorderableList.DoList(r);
+                    r.y += contractView.ReorderableList.GetHeight();
+                }
+
+                this.maxContentHeight = r.y;
+            }
+            else {
+                GUI.Label(r, "There aren't any contracts.");
             }
 
             GUI.EndScrollView();
         }
-
-        private List<Type> types = new List<Type> {
-            typeof(IObservable<>),
-//            typeof(ReactiveDictionary<,>),
-//            typeof(ReactiveCollection<>),
-        };
-        private Vector2 scrollPosition;
 
         private IEnumerable<(string, object)> GetAllMembers(object instance) {
             var fields = instance
@@ -273,9 +321,9 @@ namespace Red.Editor {
     }
 
     public class ObserverProvider<T> : ObserverProvider, IObserver<T> {
-        public void OnNext(T value) => this.Value.Execute(value);
+        public void OnNext(T value)          => this.Value.Execute(value);
         public void OnError(Exception error) => this.Error.Execute(error);
-        public void OnCompleted() => this.Complete.Execute();
+        public void OnCompleted()            => this.Complete.Execute();
     }
 }
 #endif

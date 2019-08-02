@@ -5,6 +5,8 @@ namespace Red.Editor {
     using JetBrains.Annotations;
 
     internal static class RReflectionExtensions {
+        
+        [CanBeNull]
         internal static Type[] FindCurrentGenericTypeImplementation(this Type child, Type parent) {
             parent = ResolveGenericTypeDefinition(parent);
 
@@ -67,10 +69,10 @@ namespace Red.Editor {
 
         [CanBeNull]
         private static Type[] GetGenericArgumentsFromInterfaces(Type parent, Type child) {
-            var interf = child.GetInterfaces()
+            var interfaces = child.GetInterfaces()
                 .FirstOrDefault(childInterface =>
                     childInterface.IsGenericType && childInterface.GetGenericTypeDefinition() == parent);
-            return interf != null ? interf.GenericTypeArguments : null;
+            return interfaces != null ? interfaces.GenericTypeArguments : null;
         }
 
         private static Type ResolveGenericTypeDefinition(Type parent) {

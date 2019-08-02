@@ -27,6 +27,13 @@ namespace Red {
         public string Identifier { get; protected set; }
 
         protected readonly CompositeDisposable Disposables = new CompositeDisposable();
+        
+        public readonly List<AdditionalObservable> AdditionalObservables = new List<AdditionalObservable>();
+
+        public class AdditionalObservable {
+            public string Name;
+            public object Observable;
+        }
 
         protected virtual void PreInitialize() {
 #if UNITY_EDITOR
