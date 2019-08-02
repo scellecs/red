@@ -35,3 +35,6 @@ sysinfo.txt
 *.apk
 *.unitypackage
 .idea/
+
+Test.cs
+Test.cs.meta
